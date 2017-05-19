@@ -11,5 +11,6 @@ export CLASSPATH=$CLASSPATH:target/classes
 
 echo "*******************  EXECUTING PROGRAM******************************************"
 java -cp $CLASSPATH -Dactivejdbc.log trivia.App
+echo "Chau"
 
 
