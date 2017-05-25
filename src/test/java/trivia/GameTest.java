@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class UserTest{
+public class GameTest{
     @Before
     public void before(){
         Base.open("com.mysql.jdbc.Driver", "jdbc:mysql://localhost/trivia_test", "root", "root");
@@ -36,11 +36,11 @@ public class UserTest{
     //     assertEquals(user2.isValid(), false);
     // }
 
-    @Test
-    public void validateUniquenessOfUsernames(){
-        User user = new User();
-        user.set("name", "");
+    // @Test
+    // public void validateUniquenessOfUsernames(){
+    //     User user = new User();
+    //     user.set("username", "");
 
-        assertEquals(user.isValid(), false);
-    }
+    //     assertEquals(user.isValid(), false);
+    // }
 }

@@ -13,7 +13,7 @@ public class App
       Base.open("com.mysql.jdbc.Driver", "jdbc:mysql://localhost/trivia", "root", "root");
 
       User u = new User();
-      u.set("username", "Maradona");
+      u.set("name", "Maradona");
       u.set("password", "messi");
       u.saveIt();
 
