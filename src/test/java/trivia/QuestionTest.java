@@ -1,6 +1,7 @@
 package trivia;
 
 import trivia.User;
+import trivia.Category;
 
 import org.javalite.activejdbc.Base;
 import org.junit.After;
@@ -43,4 +44,49 @@ public class QuestionTest{
 
         assertEquals(ques.isValid(), false);
     }
+/*
+    @Test
+    public void validateUniquenessOfQuestionQuestion2(){
+        Question ques = new Question();
+        Category cat = new Category();
+        cat.set("name", "Deporte");
+        ques.set("category_id", cat.get("id"));
+        ques.set("question", "¿que haces?");
+        ques.set("answer1", "nada");
+        ques.set("answer2", "poco");
+        ques.set("answer3", "mucho");
+        ques.set("correct", 1);
+
+        assertEquals(ques.isValid(), true);
+    }*/
+
+    @Test
+    public void validateUniquenessOfQuestionQuestion3(){
+        Question ques = new Question();
+        Category cat = new Category();
+        cat.set("name", "Deporte");
+        ques.set("category_id", cat.get("id"));
+        ques.set("question", "¿que haces?");
+        ques.set("answer2", "poco");
+        ques.set("answer3", "mucho");
+
+        assertEquals(ques.isValid(), false);
+    }
+
+    @Test
+    public void validateUniquenessOfQuestionQuestion4(){
+        Question ques = new Question();
+        Category cat = new Category();
+        ques.set("category_id", cat.get("id"));
+        ques.set("question", "¿que haces?");
+        ques.set("answer1", "nada");
+        ques.set("answer2", "poco");
+        ques.set("answer3", "mucho");
+
+        assertEquals(ques.isValid(), false);
+    }
+
+
+
+
 }
