@@ -24,23 +24,30 @@ public class UserTest{
         Base.close();
     }
 
-    // @Test
-    // public void validateUniquenessOfUsernames(){
-    //     User user = new User();
-    //     user.set("username", "anakin");
-    //     user.saveIt();
-
-    //     User user2 = new User();
-    //     user.set("username", "anakin");
-
-    //     assertEquals(user2.isValid(), false);
-    // }
-
     @Test
-    public void validateUniquenessOfUsernames(){
+    public void validatePresenceOf1(){
         User user = new User();
         user.set("name", "");
+        user.set("password", "1234");
 
         assertEquals(user.isValid(), false);
+    }
+
+    @Test
+    public void validatePresenceOf2(){
+        User user = new User();
+        user.set("name", "UserName");
+        user.set("password", "");
+
+        assertEquals(user.isValid(), false);
+    }
+
+    @Test
+    public void validatePresenceOf3(){
+        User user = new User();
+        user.set("name", "UserName");
+        user.set("password", "1234");
+
+        assertEquals(user.isValid(), true);
     }
 }

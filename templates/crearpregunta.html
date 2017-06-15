@@ -1,0 +1,33 @@
+<!DOCTYPE>
+<html lang="es">
+	<head>
+		<link rel="stylesheet" type="text/css" href="css/style.css" />
+		<title> Pregunta2 - Admin </title>
+	</head>
+	<body>
+
+		<header>
+			<h1> PREGUNTA2 - Crear Pregunta - {{usuario}} </h1>
+			<form action="/crearpregunta" method="post">
+				<input type="submit" value="Atras" name="exit"> <br>
+			</form>	
+			<p>{{estado}}</p>
+		</header>
+		<br>
+		<section>
+			<form action="/crearpregunta" method="post">
+				<h2> Crear preguta</h2>
+				<p>
+					Pregunta: <input type="text" name="question" size="100"><br>
+					Categoria : <input type="text" name="categoria" size="99"><br>
+					Respuesta 1: <input type="text" name="ans1" size="97"><br>
+					Respuesta 2: <input type="text" name="ans2" size="97"><br>
+					Respuesta 3: <input type="text" name="ans3" size="97"><br>
+					Correcta: <input type="text" name="correct" size="100"><br>
+					<input type="submit" value="Crear Pregunta" name="newquestion">
+				</p>
+			</form>	
+		</section>
+		<br>
+	</body>
+</html>

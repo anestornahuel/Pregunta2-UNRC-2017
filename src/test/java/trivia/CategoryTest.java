@@ -1,6 +1,6 @@
 package trivia;
 
-import trivia.User;
+import trivia.Category;
 
 import org.javalite.activejdbc.Base;
 import org.junit.After;
@@ -24,23 +24,20 @@ public class CategoryTest{
         Base.close();
     }
 
-    // @Test
-    // public void validateUniquenessOfUsernames(){
-    //     User user = new User();
-    //     user.set("username", "anakin");
-    //     user.saveIt();
-
-    //     User user2 = new User();
-    //     user.set("username", "anakin");
-
-    //     assertEquals(user2.isValid(), false);
-    // }
-
     @Test
-    public void validateUniquenessOfCategorynames(){
+    public void validatePresenceOf1(){
         Category cat = new Category();
         cat.set("name", "");
-
         assertEquals(cat.isValid(), false);
     }
+
+    @Test
+    public void validatePresenceOf2(){
+        Category cat = new Category();
+        cat.set("name", "Deporte");
+        assertEquals(cat.isValid(), true);
+    }
+
+    
+
 }

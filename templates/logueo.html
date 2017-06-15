@@ -1,0 +1,42 @@
+<!DOCTYPE>
+<html lang="es">
+	<head>
+		<link rel="stylesheet" type="text/css" href="css/style.css" />
+		<title> Pregunta2 - Login </title>
+	</head>
+	<body>
+		<header>
+			<!-- <table background="image/preguntados.png" width="1495" height="486">
+			<table background="image/preguntados.png" width="747" height="243">
+				<tr> 
+					<td>
+						<br><br><br><br><br><h1><br><h1>PREGUNTA2<h4>{{estado}}</h4></h1>
+					</td> 
+				</tr> 
+			</table> -->
+        	<h1> <img src="image/preguntados.png" width="50%" align="left"> PREGUNTA2 <h4>{{estado}}</h4> </h1>
+        	<!-- 1241 -->
+        	<!-- <img src="image/preguntados.png" width="1241" height="128"> -->
+        	<!-- <img src="image/preguntados.png" width="60%"> -->
+		</header>
+		<br>
+		<section>
+			<br>
+			<h4>Inicia sesion con una cuenta ya registrada</h4>
+			<form action="/logueo" method="post">
+				<input type="text" name="nombrel" placeholder="Nombre de usuario" autocomplete="off">
+				<input type="password" name="clavel" placeholder="Contraseña" autocomplete="off">
+				<input type="submit" value="Entrar"	 name="entrar" autocomplete="off">
+			</form>
+			<h4> <br> </h4>
+			<h4>Crea una nueva cuenta</h4>
+			<form action="/logueo" method="post">
+				<input type="text" name="nombrer" placeholder="Nombre de usuario" autocomplete="off">
+				<input type="password" name="clave1" placeholder="Contraseña" autocomplete="off">
+				<input type="password" name="clave2" placeholder="Repetir Contraseña" autocomplete="off">
+				<input type="submit" value="Registrarme" name="registrarme" autocomplete="off">
+			</form>	
+			<br><br><br>	
+		</section>
+	</body>
+</html>

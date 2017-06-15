@@ -1,0 +1,34 @@
+<!DOCTYPE>
+<html lang="es">
+	<head>
+	</head>
+	<head>
+		<title> PREGUNTA2 - Principal </title>
+		<link rel="stylesheet" type="text/css" href="css/style.css" />
+	</head>
+	<body>
+		<header>
+			<br><br>
+        	<h1> PREGUNTA2 </h1>
+        	<form action="/principal" method="post">
+				<input type="submit" value="Cerrar Sesion" name="exit"> <br>
+			</form>	
+        	<br><br>
+		</header>
+		<br>
+		<section>
+			<h4> {{usuario}} -- {{puntos}} ptos</h4> <br>
+			<p>{{estado}}</p>
+			<br>
+				<form action="/principal" method="post">
+					<input type="submit" value="Jugar" name="jugar"> 
+				</form>	
+				<form action="/principal" method="post">
+					<input type="submit" value="Ranking" name="ranking"> <br>
+				</form>	
+				<form action="/principal" method="post">
+					<input type="submit" value="Crear pregunta" name="crearpregunta"> <br>
+				</form>	
+		</section>
+	</body>
+</html>

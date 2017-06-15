@@ -1,6 +1,7 @@
 package trivia;
 
 import trivia.User;
+import trivia.Game;
 
 import org.javalite.activejdbc.Base;
 import org.junit.After;
@@ -24,23 +25,32 @@ public class GameTest{
         Base.close();
     }
 
-    // @Test
-    // public void validateUniquenessOfUsernames(){
-    //     User user = new User();
-    //     user.set("username", "anakin");
-    //     user.saveIt();
+    @Test
+    public void validatePresenceOf1(){
+        Game game = new Game();
+        game.set("user_id", "");
+        assertEquals(game.isValid(), false);
+    }
 
-    //     User user2 = new User();
-    //     user.set("username", "anakin");
+    @Test
+    public void validatePresenceOf2(){
+        Game game = new Game();
+        game.set("lifes", "");
+        assertEquals(game.isValid(), false);
+    }
 
-    //     assertEquals(user2.isValid(), false);
-    // }
 
-    // @Test
-    // public void validateUniquenessOfUsernames(){
-    //     User user = new User();
-    //     user.set("username", "");
+    @Test
+    public void validatePresenceOf3(){
+        Game game = new Game();
+        User user = new User();
+        user.set("name", "TestUser");
+        user.set("password", "TestPassword");
+        user.saveIt();
+        game.set("user_id", user.get("id"));
+        game.set("lifes", 3);
 
-    //     assertEquals(user.isValid(), false);
-    // }
+        assertEquals(game.isValid(), true);
+    }
+
 }

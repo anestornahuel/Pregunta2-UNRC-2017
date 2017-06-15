@@ -1,0 +1,71 @@
+<!DOCTYPE>
+<html lang="es">
+	<head>
+		<link rel="stylesheet" type="text/css" href="css/style.css" />
+		<title> Pregunta2 - Ranking </title>
+	</head>
+	<body>
+		<header>
+        	<h1> PREGUNTA2 - Ranking </h1>
+        	<form action="/ranking" method="post">
+        		<input type="submit" value="Atras" name="atras"> <br>
+        	</form>
+		</header>
+		<br>
+		<section>
+			<h2>TOP TEN</h2>
+
+			<table>
+				<ol>
+					<tr>
+						<td>Posicion</td><td>Nombre</td><td>Puntos</td>
+					</tr>	
+					<tr>
+						<td>1</td><td>{{user0}}</td><td>{{score0}}</td>
+					</tr>				
+					<tr>
+						<td>2</td><td>{{user1}}</td><td>{{score1}}</td>
+					</tr>
+					<tr>
+						<td>3</td><td>{{user2}}</td><td>{{score2}}</td>
+					</tr>
+					<tr>
+						<td>4</td><td>{{user3}}</td><td>{{score3}}</td>
+					</tr>
+					<tr>
+						<td>5</td><td>{{user4}}</td><td>{{score4}}</td>
+					</tr>
+					<tr>
+						<td>6</td><td>{{user5}}</td><td>{{score5}}</td>
+					</tr>
+					<tr>
+						<td>7</td><td>{{user6}}</td><td>{{score6}}</td>
+					</tr>
+					<tr>
+						<td>8</td><td>{{user7}}</td><td>{{score7}}</td>
+					</tr>
+					<tr>
+						<td>9</td><td>{{user8}}</td><td>{{score8}}</td>
+					</tr>
+					<tr>
+						<td>10</td><td>{{user9}}</td><td>{{score09}}</td>
+					</tr>
+				</ol>
+			</table>
+
+
+<!-- 			<ol>
+				<li>{{user0}} {{score0}}</li>
+				<li>{{user1}} {{score1}}</li>
+				<li>{{user2}} {{score2}}</li>
+				<li>{{user3}} {{score3}}</li>
+				<li>{{user4}} {{score4}}</li>
+				<li>{{user5}} {{score5}}</li>
+				<li>{{user6}} {{score6}}</li>
+				<li>{{user7}} {{score7}}</li>
+				<li>{{user8}} {{score8}}</li>
+				<li>{{user9}} {{score9}}</li>
+			</ol> -->
+		</section>
+	</body>
+</html>

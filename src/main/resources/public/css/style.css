@@ -1,0 +1,46 @@
+/*
+Verde 7AFA6C
+Celeste #DDF5EB
+Gris AAAAAA
+
+*/
+
+.btn {
+	border-radius: 0px 38px 38px 38px;
+	-moz-border-radius: 0px 38px 38px 38px;
+	-webkit-border-radius: 0px 38px 38px 38px;
+	border: 2px solid #00ff3c;	
+}
+
+section, header {
+	border-radius: 0px 38px 38px 38px;
+	-moz-border-radius: 0px 38px 38px 38px;
+	-webkit-border-radius: 0px 38px 38px 38px;
+	border: 2px solid #00ff3c;
+	text-align: center;
+	border: 4px solid black;
+	background-color: #FF0080;
+	background: red;  /*For browsers that do not support gradients */
+	background: -webkit-linear-gradient(#567F51, #AAAAAA, #567F51); /* For Safari 5.1 to 6.0 */
+	background: -o-linear-gradient(#567F51, #AAAAAA, #567F51); /* For Opera 11.1 to 12.0 */
+	background: -moz-linear-gradient(#567F51, #AAAAAA, #567F51); /* For Firefox 3.6 to 15 */
+	background: linear-gradient(#567F51, #AAAAAA, #567F51); /* Standard syntax */
+}
+
+img {
+	margin-left: 6em;
+}
+
+td {
+	text-align: right;
+	width: 300;
+}
+
+body {
+	background-color: white;
+}
+
+h1, h2 {
+	text-align: center;
+	color: black;
+}

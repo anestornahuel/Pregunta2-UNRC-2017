@@ -1,6 +1,6 @@
 package trivia;
 
-import trivia.User;
+import trivia.Question;
 import trivia.Category;
 
 import org.javalite.activejdbc.Base;
@@ -25,31 +25,53 @@ public class QuestionTest{
         Base.close();
     }
 
-    // @Test
-    // public void validateUniquenessOfUsernames(){
-    //     User user = new User();
-    //     user.set("username", "anakin");
-    //     user.saveIt();
-
-    //     User user2 = new User();
-    //     user.set("username", "anakin");
-
-    //     assertEquals(user2.isValid(), false);
-    // }
-
     @Test
-    public void validateUniquenessOfQuestionQuestion(){
+    public void validatePresenceOf2(){
         Question ques = new Question();
         ques.set("question", "");
 
         assertEquals(ques.isValid(), false);
     }
-/*
+
     @Test
-    public void validateUniquenessOfQuestionQuestion2(){
+    public void validatePresenceOf3(){
         Question ques = new Question();
         Category cat = new Category();
         cat.set("name", "Deporte");
+        ques.set("category_id", cat.get("id"));
+        ques.set("question", "¿que haces?");
+        ques.set("answer2", "poco");
+        ques.set("answer3", "mucho");
+
+        assertEquals(ques.isValid(), false);
+    }
+
+
+
+    @Test
+    public void validatePresenceOf4(){
+        Question ques = new Question();
+        Category cat = new Category();
+        cat.set("name", "Deporte");
+        cat.saveIt();
+        System.out.println(cat.get("id"));
+        ques.set("category_id", cat.get("id"));
+        ques.set("question", "¿que haces?");
+        ques.set("answer1", "nada");
+        ques.set("answer2", "poco");
+        ques.set("answer3", "mucho");
+        ques.set("correct", 4);
+
+        assertEquals(ques.isValid(), false);
+    }
+
+    @Test
+    public void validatePresenceOf5(){
+        Question ques = new Question();
+        Category cat = new Category();
+        cat.set("name", "Deporte");
+        cat.saveIt();
+        System.out.println(cat.get("id"));
         ques.set("category_id", cat.get("id"));
         ques.set("question", "¿que haces?");
         ques.set("answer1", "nada");
@@ -58,32 +80,6 @@ public class QuestionTest{
         ques.set("correct", 1);
 
         assertEquals(ques.isValid(), true);
-    }*/
-
-    @Test
-    public void validateUniquenessOfQuestionQuestion3(){
-        Question ques = new Question();
-        Category cat = new Category();
-        cat.set("name", "Deporte");
-        ques.set("category_id", cat.get("id"));
-        ques.set("question", "¿que haces?");
-        ques.set("answer2", "poco");
-        ques.set("answer3", "mucho");
-
-        assertEquals(ques.isValid(), false);
-    }
-
-    @Test
-    public void validateUniquenessOfQuestionQuestion4(){
-        Question ques = new Question();
-        Category cat = new Category();
-        ques.set("category_id", cat.get("id"));
-        ques.set("question", "¿que haces?");
-        ques.set("answer1", "nada");
-        ques.set("answer2", "poco");
-        ques.set("answer3", "mucho");
-
-        assertEquals(ques.isValid(), false);
     }
 
 
