@@ -6,8 +6,6 @@ import trivia.Question;
 import trivia.User;
 import org.javalite.activejdbc.Base;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.*;
 
 import spark.ModelAndView;
@@ -15,35 +13,39 @@ import spark.template.mustache.MustacheTemplateEngine;
 
 public class App {
 
+	static private final int CATEGORIES = 6; 		// Cantidad de categorias
+	static private final String LIFES = "3"; 		// Vidas al iniciar un juego
+	static private final String driverdb = "com.mysql.jdbc.Driver";
+	static private final String basedb = "jdbc:mysql://localhost/trivia";
+	static private final String userdb = "root";
+	static private final String passworddb = "root";
+     
+	// Obtiene una pregunta aleatoria de la n-esesima categoria
+	private static Question generarPreguntaAleatoria(int n) {
+		String idcat = (Category.where("id >= ?", "0").get(n)).getString("id");
+		List<Question> questions = Question.where("category_id = ?", idcat);
+		Random ran = new Random();
+		return questions.get(ran.nextInt(questions.size()));
+	}
 
-	static private boolean isValid(String s) {
+	// Obtiene una pregunta aleatoria
+	private static Question generarPreguntaAleatoria() {
+		Random ran = new Random();
+		return  generarPreguntaAleatoria(ran.nextInt(CATEGORIES));
+	}
+
+	private static  boolean isValid(String s) {
 		return s != null && s.length() > 6;
 	}
 
-	static private String htmlizar(String s) {
-		String ret = "";
-		for (int i = 0; i < s.length(); i++) {
-			if (s.charAt(i) == ' ') {
-				ret += "_";
-			}else {
-				ret += s.charAt(i);				
-			}
-		}
-		return ret;
-	}
-
-	static public final int LIFES = 3; // Vidas al iniciar un juego
-
 	public static void main(String[] args) {
-
-
-
 		staticFileLocation("/public");
-		String driverdb = "com.mysql.jdbc.Driver";
-		String basedb = "jdbc:mysql://localhost/trivia";
-		String userdb = "root";
-		String passworddb = "root";
-
+		
+		Base.open(driverdb, basedb, userdb, passworddb);		
+		if (Category.count() == 0) {
+			Inicializacion.inicializar(driverdb, basedb, userdb, passworddb);	
+		}
+		Base.close();
 
 		before((rq, rs) -> {
 			Base.open(driverdb, basedb, userdb, passworddb);
@@ -53,12 +55,12 @@ public class App {
 			Base.close();
 		});
 
-
 		// Principal
 		get("/", (rq, rs) -> {
 			return new ModelAndView(null, "logueo.html");
 		},new MustacheTemplateEngine());
 
+		// Inicio de secion y registro de nuevo usuario
 		post("/logueo", (rq, rs) -> {
 			Map map = new HashMap();
 			String currentUser = rq.session().attribute("currentUser");
@@ -70,15 +72,9 @@ public class App {
 				String puntos = user.getString("score");
 				map.put("usuario", usuario);
 				map.put("puntos", puntos);
-				if (user.getString("esadmin") == "true") {
-					map.put("typeadmin", "submit");
-				}else {
-					map.put("typeadmin", "hidden");
-				}
 				return new ModelAndView(map, "principal.html");
 			}else {
 				String entrar = rq.queryParams("entrar");
-				//String registro = rq.queryParams("registrarme");
 				if (entrar != null) {
 					// Inicio de sesion
 					String nombrel = rq.queryParams("nombrel");
@@ -102,14 +98,10 @@ public class App {
 					String password2r = rq.queryParams("clave2");
 					user = User.findFirst("name = ?", nombrer);			
 					if (user == null) {
+						// Si no hay un usuario registrado con el mismo nombre
 						if (isValid(nombrer) && isValid(password2r)) {
 							if (passwordr.equals(password2r)) {
-								User usr = new User();
-								usr.set("name", nombrer);
-								usr.set("password", passwordr);
-								usr.set("score", 0);
-								usr.set("esadmin", false);
-								usr.saveIt();
+								User usr = new User(nombrer, passwordr);
 								map.put("estado", "Se creo la cuenta \"" + nombrer + "\", ahora inicia sesion");
 								return new ModelAndView(map, "logueo.html");
 							}else {
@@ -127,8 +119,8 @@ public class App {
 				}
 			}
 		},new MustacheTemplateEngine());
-
-
+	
+		// Menu principal
 		post("/principal", (rq, rs) -> {
 			Map map = new HashMap();
 			String currentUser = rq.session().attribute("currentUser");
@@ -140,7 +132,7 @@ public class App {
 				User user = User.findFirst("id = ?", currentUser);
 				String usuario = user.getString("name");
 				String puntos = user.getString("score");
-				String continuar =	rq.queryParams("continuar");
+				String continuar = rq.queryParams("continuar");
 				map.put("usuario", usuario);
 				map.put("puntos", puntos);
 				if (currentGame != null) {
@@ -190,33 +182,20 @@ public class App {
 				User user = User.findFirst("id = ?", currentUser);
 				String usuario = user.getString("name");
 				String puntos = user.getString("score");
-				String continuar =	rq.queryParams("continuar");
+				String continuar = rq.queryParams("continuar");
 				map.put("usuario", usuario);
 				map.put("puntos", puntos);
-				if (user.getString("esadmin") == "false") {
-					map.put("admin1", "<!--");
-					map.put("admin2", "-->");
-				}
 				if (continuar != null) {
 					Game game;
 					if (currentGame == null) {
-						game = new Game();
-						game.set("user_id", currentUser);
-						game.set("lifes", LIFES);
-						game.saveIt();
+						game = new Game(currentUser, LIFES);
 					}else {
 						game = Game.findFirst("id = ?", currentGame);	
 					}
 					currentGame = game.getString("id");
-					rq.session().attribute("currentGame", currentGame);						
-
+					rq.session().attribute("currentGame", currentGame);
 					if (Integer.parseInt(game.getString("lifes")) >= 0) {
-						// Todas las preguntas
-						List<Question> questions = Question.findAll();		
-						// Obtiene una pregunta aleatoriamente
-						int ran = (int)(Math.random() * questions.size());
-						Question ques = questions.get(ran);						
-						// carga el map
+						Question ques = generarPreguntaAleatoria();
 						String currentQuestion = ques.getString("id");
 						String categoria = Category.findFirst("id = ?", ques.getString("category_id")).getString("name");
 						String vidas = game.getString("lifes");
@@ -224,9 +203,9 @@ public class App {
 						map.put("categoria", categoria);
 						map.put("vidas", vidas);
 						map.put("pregunta", pregunta);
-						map.put("rpta1", htmlizar(ques.getString("answer1")));				
-						map.put("rpta2", htmlizar(ques.getString("answer2")));				
-						map.put("rpta3", htmlizar(ques.getString("answer3")));				
+						map.put("rpta1", ques.getString("answer1").replace(' ', '_'));				
+						map.put("rpta2", ques.getString("answer2").replace(' ', '_'));
+						map.put("rpta3", ques.getString("answer3").replace(' ', '_'));
 						rq.session().attribute("currentQuestion", currentQuestion);
 						return new ModelAndView(map, "jugando.html");
 					}else {
@@ -250,6 +229,7 @@ public class App {
 			}
 		},new MustacheTemplateEngine());
 
+		// Muestra la pregunta
 		post("/jugando", (rq, rs) -> {
 			Map map = new HashMap();
 			String currentUser = rq.session().attribute("currentUser");
@@ -263,23 +243,22 @@ public class App {
 				Game game = Game.findFirst("id = ?", currentGame);;
 				String userAns = rq.queryParams("ans");
 				String correctAns = ques.getString("answer" + (ques.getString("correct")));				
-				if (userAns.equals(htmlizar(correctAns))) {
+				if (userAns.equals(correctAns.replace(' ', '_'))) {
 					map.put("estado", "Respuesta correcta");
 					map.put("estado1", ques.getString("question"));
 					map.put("estado2", correctAns);	
-					int score = Integer.parseInt(userp.getString("score")) + 1;
-					userp.set("score", score).saveIt();
+					userp.updateScore(1);
 				}else {
 					map.put("estado", "Respuesta incorreccta");
 					map.put("estado1", "Tu respuesta: " + userAns);
 					map.put("estado2", "Correcta: " + correctAns);					
-					int lifes = Integer.parseInt(game.getString("lifes")) - 1;
-					game.set("lifes", lifes).saveIt();
+					game.reduceLife();
 				}
 				return new ModelAndView(map, "generar.html");
 			}
 		},new MustacheTemplateEngine());
 
+		// Muestra los 10 jugadores con mayor puntaje
 		post("/ranking",(rq, rs) -> {
 			Map map = new HashMap();
 			String currentUser = rq.session().attribute("currentUser"); 
@@ -291,11 +270,7 @@ public class App {
 				String puntos = user.getString("score");
 				map.put("usuario", usuario);
 				map.put("puntos", puntos);
-				if (rq.queryParams("atras") != null) {
-					if (user.getString("esadmin") == "false") {
-						map.put("admin1", "<!--");
-						map.put("admin2", "-->");
-					}
+				if (rq.queryParams("atras") != null) {					
 					return new ModelAndView(map, "principal.html");
 				}else {
 					return new ModelAndView(map, "ranking.html");
@@ -303,22 +278,24 @@ public class App {
 			}
 		},new MustacheTemplateEngine());
 
-
+		// Permite al usuario crear una nueva pregunta
 		post("/crearpregunta",(rq, rs) -> {
 			Map map = new HashMap();
 			String currentUser = rq.session().attribute("currentUser"); 
 			if (currentUser == null) {
 				return new ModelAndView(null, "logueo.html");
 			}else {
+				map.put("usuario", User.findFirst("id = ?", currentUser).getString("name"));
+				map.put("puntos", User.findFirst("id = ?", currentUser).getString("score"));
 				if (rq.queryParams("newquestion") != null) {
 					String question = rq.queryParams("question");
 					String categoria = rq.queryParams("categoria");
 					String ans1 = rq.queryParams("ans1");
 					String ans2 = rq.queryParams("ans2");
 					String ans3 = rq.queryParams("ans3");
-					String correct = rq.queryParams("correct");
+					String correct = rq.queryParams("correct");					
 					int correcto = Integer.parseInt(correct);
-					if (question != null && categoria != null && ans1 != null && ans2 != null && ans3 != null && correct != null && correcto > 0 && correcto <= 3) {
+					if (correct != null && correct.compareTo("1") >= 0 && correct.compareTo("3") <= 0 &&question != null && categoria != null && ans1 != null && ans2 != null && ans3 != null) {
 						// Informacion correcta en los campos			
 						Category catName = Category.findFirst("name = ?", categoria);
 						Category catId = Category.findFirst("id = ?", categoria);
@@ -327,15 +304,8 @@ public class App {
 							if (Question.findFirst("question = ?", question) == null) {
 								// La pregunta no existe
 								Category catego = catName != null ? catName : catId;
-								Question ques = new Question();
-								ques.set("question", question);
-								ques.set("category_id", catego.getString("id"));
-								ques.set("answer1", ans1);
-								ques.set("answer2", ans2);
-								ques.set("answer3", ans3);
-								ques.set("correct", correct);
-								ques.saveIt();
-								map.put("estado", "La pregunta " + ques.getString("id") + " se creo correctamente");								
+								Question ques = new Question(catego.getString("id"), question, ans1, ans2, ans3, correct);
+								map.put("estado", "La pregunta " + ques.getString("id") + " se creo correctamente");
 							}else {
 								// La pregunta ya existe
 								map.put("estado", "Error: La pregunta ya existe");
@@ -349,11 +319,8 @@ public class App {
 						map.put("estado", "Error: Informacion invalida en los campos");
 					}
 					return new ModelAndView(map, "crearpregunta.html");
-				}else {
-					map.put("usuario", User.findFirst("id = ?", currentUser).getString("name"));
-					map.put("puntos", User.findFirst("id = ?", currentUser).getString("score"));					
+				}else {					
 					return new ModelAndView(map, "principal.html");
-
 				}
 			}
 		},new MustacheTemplateEngine());

@@ -2,7 +2,6 @@
 Verde 7AFA6C
 Celeste #DDF5EB
 Gris AAAAAA
-
 */
 
 .btn {
@@ -27,8 +26,24 @@ section, header {
 	background: linear-gradient(#567F51, #AAAAAA, #567F51); /* Standard syntax */
 }
 
+
 img {
-	margin-left: 6em;
+	margin-left: 4%;
+}
+
+div.container {
+width: 50%;
+max-width: 960px;
+margin: 0 auto;
+}
+img {
+width: 50%;
+height: auto;
+}
+
+#imgjugando {
+width: 10%;
+height: auto;
 }
 
 td {
