@@ -57,7 +57,9 @@ public class App {
 
 		// Principal
 		get("/", (rq, rs) -> {
-			return new ModelAndView(null, "logueo.html");
+			Map map = new HashMap();
+			map.put("estado", "Bienvenido a Pregunta2");
+			return new ModelAndView(map, "logueo.html");
 		},new MustacheTemplateEngine());
 
 		// Inicio de secion y registro de nuevo usuario
@@ -200,12 +202,14 @@ public class App {
 						String categoria = Category.findFirst("id = ?", ques.getString("category_id")).getString("name");
 						String vidas = game.getString("lifes");
 						String pregunta = ques.getString("question");
+						String incorrect = ("1" == ques.getString("correct")) ? "2" :  "1";
 						map.put("categoria", categoria);
 						map.put("vidas", vidas);
 						map.put("pregunta", pregunta);
 						map.put("rpta1", ques.getString("answer1").replace(' ', '_'));				
 						map.put("rpta2", ques.getString("answer2").replace(' ', '_'));
 						map.put("rpta3", ques.getString("answer3").replace(' ', '_'));
+						map.put("incorrect", incorrect);
 						rq.session().attribute("currentQuestion", currentQuestion);
 						return new ModelAndView(map, "jugando.html");
 					}else {
@@ -242,17 +246,23 @@ public class App {
 				User userp = User.findFirst("id = ?", currentUser);
 				Game game = Game.findFirst("id = ?", currentGame);;
 				String userAns = rq.queryParams("ans");
-				String correctAns = ques.getString("answer" + (ques.getString("correct")));				
-				if (userAns.equals(correctAns.replace(' ', '_'))) {
-					map.put("estado", "Respuesta correcta");
-					map.put("estado1", ques.getString("question"));
-					map.put("estado2", correctAns);	
-					userp.updateScore(1);
-				}else {
-					map.put("estado", "Respuesta incorreccta");
-					map.put("estado1", "Tu respuesta: " + userAns);
+				String correctAns = ques.getString("answer" + (ques.getString("correct")));
+				if (rq.queryParams("time") != null) {
+					map.put("estado", "Se acabo el tiempo de respuesta");
 					map.put("estado2", "Correcta: " + correctAns);					
 					game.reduceLife();
+				}else {
+					if (userAns.equals(correctAns.replace(' ', '_'))) {
+						map.put("estado", "Respuesta correcta");
+						map.put("estado1", ques.getString("question"));
+						map.put("estado2", correctAns);	
+						userp.updateScore(1);
+					}else {
+						map.put("estado", "Respuesta incorreccta");
+						map.put("estado1", "Tu respuesta: " + userAns);
+						map.put("estado2", "Correcta: " + correctAns);					
+						game.reduceLife();
+					}					
 				}
 				return new ModelAndView(map, "generar.html");
 			}
