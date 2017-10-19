@@ -1,12 +1,14 @@
 <!DOCTYPE>
 <html lang="es">
 	<head>
+		<script type="text/javascript" src="javascript/script.js"></script>
 		<link rel="stylesheet" type="text/css" href="css/style.css" />
 		<title> Pregunta2 {{categoria}} </title>
 	</head>
-	<body>
+	<body onload="second('timer', '6', 'terminartiempo')">
 		<header>
         	<h1> <img src="image/{{categoria}}.png" id="imgjugando" align="left"> PREGUNTA2 - {{categoria}} - {{usuario}}</h1>
+        	<h3 id = "timer"> Tiempo de respuesta </h3>
         	<p>Vidas: {{vidas}}
         		<br>
         		Puntos: {{puntos}}
@@ -28,6 +30,9 @@
 			
 			<form action="/jugando" method="post">
 				<input class="btn" type="submit" value={{rpta3}} name="ans"> <br>			
+			</form>
+			<form action="/jugando" method="post">
+				<input id="terminartiempo" type="submit" value="time" name="time" style="display: none">			
 			</form>	
 
 		</section>
