@@ -74,6 +74,8 @@ public class App {
 				String puntos = user.getString("score");
 				map.put("usuario", usuario);
 				map.put("puntos", puntos);
+				String vidas = user.getString("globalLives");
+				map.put("vidas", vidas);
 				return new ModelAndView(map, "principal.html");
 			}else {
 				String entrar = rq.queryParams("entrar");
@@ -88,6 +90,8 @@ public class App {
 						String puntos = user.getString("score");
 						map.put("puntos", puntos);
 						rq.session().attribute("currentUser", user.getString("id"));
+						String vidas = user.getString("globalLives");
+						map.put("vidas", vidas);
 						return new ModelAndView(map, "principal.html");
 					}else {
 						map.put("estado", "Nombre de usuario o password incorrecto");
@@ -187,6 +191,8 @@ public class App {
 				String continuar = rq.queryParams("continuar");
 				map.put("usuario", usuario);
 				map.put("puntos", puntos);
+				String vidas = user.getString("globalLives");
+				map.put("vidas", vidas);
 				if (continuar != null) {
 					Game game;
 					if (currentGame == null) {
@@ -206,11 +212,11 @@ public class App {
 						Question ques = generarPreguntaAleatoria();
 						String currentQuestion = ques.getString("id");
 						String categoria = Category.findFirst("id = ?", ques.getString("category_id")).getString("name");
-						String vidas = game.getString("lifes");
+						String gamelife = game.getString("lifes");
 						String pregunta = ques.getString("question");
 						String incorrect = ("1" == ques.getString("correct")) ? "2" :  "1";
 						map.put("categoria", categoria);
-						map.put("vidas", vidas);
+						map.put("vidas", gamelife);
 						map.put("pregunta", pregunta);
 						map.put("rpta1", ques.getString("answer1").replace(' ', '_'));				
 						map.put("rpta2", ques.getString("answer2").replace(' ', '_'));
@@ -286,6 +292,8 @@ public class App {
 				String puntos = user.getString("score");
 				map.put("usuario", usuario);
 				map.put("puntos", puntos);
+				String vidas = user.getString("globalLives");
+				map.put("vidas", vidas);
 				if (rq.queryParams("atras") != null) {					
 					return new ModelAndView(map, "principal.html");
 				}else {
@@ -301,8 +309,11 @@ public class App {
 			if (currentUser == null) {
 				return new ModelAndView(null, "logueo.html");
 			}else {
-				map.put("usuario", User.findFirst("id = ?", currentUser).getString("name"));
-				map.put("puntos", User.findFirst("id = ?", currentUser).getString("score"));
+				User user = User.findFirst("id = ?", currentUser);
+				String vidas = user.getString("globalLives");
+				map.put("usuario", user.getString("name"));
+				map.put("puntos", user.getString("score"));
+				map.put("vidas", vidas);
 				if (rq.queryParams("newquestion") != null) {
 					String question = rq.queryParams("question");
 					String categoria = rq.queryParams("categoria");
