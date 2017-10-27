@@ -24,8 +24,7 @@ public class User extends Model {
 
 	// Aumenta o disminuye x puntos
 	public void updateScore(int x) {
-		int score = Integer.parseInt(this.getString("score")) + x;
-		set("score", score);
+		set("score", score() + x);
 		saveIt();
 	}
 
@@ -34,10 +33,20 @@ public class User extends Model {
 		return Integer.parseInt(this.getString("globalLives"));
 	}
 
+	// Retorna la cantidad de puntos
+	public int score() {
+		return Integer.parseInt(this.getString("score"));
+	}
+
 	// Reduce una vida global
 	public void reduceLive() {
-		// int lives = Integer.parseInt(this.getString("globalLives")) - 1;
 		set("globalLives", lives() - 1);
+		saveIt();
+	}
+
+	// Aumenta o disminuye x vidas globales
+	public void updateLives(int x) {
+		set("globalLives", lives() + x);
 		saveIt();
 	}
 

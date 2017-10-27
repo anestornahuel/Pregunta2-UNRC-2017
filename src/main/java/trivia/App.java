@@ -15,6 +15,7 @@ public class App {
 
 	static private final int CATEGORIES = 6; 		// Cantidad de categorias
 	static private final String LIFES = "3"; 		// Vidas al iniciar un juego
+	static public final int LIFECOST = 50;		// Precio de una vida
 	static private final String driverdb = "com.mysql.jdbc.Driver";
 	static private final String basedb = "jdbc:mysql://localhost/trivia";
 	static private final String userdb = "root";
@@ -145,30 +146,46 @@ public class App {
 					map.put("estado", "Continuas jugando");
 					return new ModelAndView(map, "generar.html");
 				}else {
-					String jugar = rq.queryParams("jugar");
-					if (jugar != null) {
-						map.put("estado", "Jugar un nuevo juego");
-						return new ModelAndView(map, "generar.html");
-					}else {
-						String administrar = rq.queryParams("crearpregunta");
-						if (administrar != null) {
-							map.put("estado", "Para crear una pregunta completa los siguientes campos");
-							return new ModelAndView(map, "crearpregunta.html");
+					if (rq.queryParams("comprarvida") != null) {
+						if (user.score() >= LIFECOST) {
+							user.updateScore(-LIFECOST);
+							user.updateLives(1);
+							map.put("estado", "Compraste una vida por " + LIFECOST + " puntos");
 						}else {
-							String exit = rq.queryParams("exit");
-							if (exit != null) {
-								rq.session().removeAttribute("currentUser");
-								return new ModelAndView(null, "logueo.html");
+							map.put("estado", "No tienes puntos suficientes, necesitas " + LIFECOST);
+						}
+						user = User.findFirst("id = ?", currentUser);
+						String vidas = user.getString("globalLives");
+						puntos = user.getString("score");
+						map.put("puntos", puntos);
+						map.put("vidas", vidas);
+						return new ModelAndView(map, "principal.html");							
+					}else {						
+						String jugar = rq.queryParams("jugar");
+						if (jugar != null) {
+							map.put("estado", "Jugar un nuevo juego");
+							return new ModelAndView(map, "generar.html");
+						}else {
+							String administrar = rq.queryParams("crearpregunta");
+							if (administrar != null) {
+								map.put("estado", "Para crear una pregunta completa los siguientes campos");
+								return new ModelAndView(map, "crearpregunta.html");
 							}else {
-								// Todos los usuarios ordenados de mayor a menor puntaje
-								List<User> usuarios = User.findAll().limit(10).orderBy("score desc");
-								for (int i = 0; i < usuarios.size(); i++) {
-									String add = "user" + i;
-									map.put(add, usuarios.get(i).getString("name"));
-									add = "score" + i;
-									map.put(add, usuarios.get(i).getString("score"));
+								String exit = rq.queryParams("exit");
+								if (exit != null) {
+									rq.session().removeAttribute("currentUser");
+									return new ModelAndView(null, "logueo.html");
+								}else {
+									// Todos los usuarios ordenados de mayor a menor puntaje
+									List<User> usuarios = User.findAll().limit(10).orderBy("score desc");
+									for (int i = 0; i < usuarios.size(); i++) {
+										String add = "user" + i;
+										map.put(add, usuarios.get(i).getString("name"));
+										add = "score" + i;
+										map.put(add, usuarios.get(i).getString("score"));
+									}
+									return new ModelAndView(map, "ranking.html");								
 								}
-								return new ModelAndView(map, "ranking.html");								
 							}
 						}
 					}
