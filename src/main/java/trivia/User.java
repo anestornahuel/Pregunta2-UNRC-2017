@@ -18,7 +18,7 @@ public class User extends Model {
 
 	// Constructor
 	public User(String name, String pass) {
-		set("password", pass, "name", name, "score", "0");
+		set("password", pass, "name", name, "score", "0", "globalLives", "5");
 		saveIt();
 	}
 
@@ -28,5 +28,18 @@ public class User extends Model {
 		set("score", score);
 		saveIt();
 	}
+
+	// Retorna la cantidad de vidas globales
+	public int lives() {
+		return Integer.parseInt(this.getString("globalLives"));
+	}
+
+	// Reduce una vida global
+	public void reduceLive() {
+		// int lives = Integer.parseInt(this.getString("globalLives")) - 1;
+		set("globalLives", lives() - 1);
+		saveIt();
+	}
+
 
 }
