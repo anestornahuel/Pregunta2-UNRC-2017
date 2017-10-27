@@ -191,6 +191,12 @@ public class App {
 					Game game;
 					if (currentGame == null) {
 						game = new Game(currentUser, LIFES);
+						if (user.lives() <= 0) {
+							map.put("estado", "No tienes vidas suficientes para iniciar el juego");
+							return new ModelAndView(map, "principal.html");
+						}else {
+							user.reduceLive();
+						}
 					}else {
 						game = Game.findFirst("id = ?", currentGame);	
 					}
