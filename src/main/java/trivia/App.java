@@ -8,6 +8,9 @@ import org.javalite.activejdbc.Base;
 
 import java.util.*;
 
+import  java.text.DateFormat;
+import  java.text.SimpleDateFormat;
+
 import spark.ModelAndView;
 import spark.template.mustache.MustacheTemplateEngine;
 
@@ -142,6 +145,15 @@ public class App {
 				String continuar = rq.queryParams("continuar");
 				map.put("usuario", usuario);
 				map.put("puntos", puntos);
+				DateFormat dateFormat = new SimpleDateFormat("dd");
+				Date lastupdateDate = user.getDate("lastupdate");
+				Date currentDate = new Date();
+				if (!(dateFormat.format(lastupdateDate)).equals(dateFormat.format(currentDate))) {
+					user.updateLives(-user.lives());
+					user.updateLives(5);
+					user.set("lastupdate", user.getDate("updated_at"));
+					user.saveIt();
+				}
 				if (currentGame != null) {
 					map.put("estado", "Continuas jugando");
 					return new ModelAndView(map, "generar.html");
@@ -338,7 +350,6 @@ public class App {
 					String ans2 = rq.queryParams("ans2");
 					String ans3 = rq.queryParams("ans3");
 					String correct = rq.queryParams("correct");					
-					int correcto = Integer.parseInt(correct);
 					if (correct != null && correct.compareTo("1") >= 0 && correct.compareTo("3") <= 0 &&question != null && categoria != null && ans1 != null && ans2 != null && ans3 != null) {
 						// Informacion correcta en los campos			
 						Category catName = Category.findFirst("name = ?", categoria);
