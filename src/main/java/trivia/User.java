@@ -7,9 +7,8 @@ public class User extends Model {
 	static{
     		validatePresenceOf("name").message("Please, provide your username");
 		validatePresenceOf("password").message("Please, provide your password");
-    		validateWith(new UniquenessValidator("name")).message("This name is already taken.");
-		
-	}
+    		validateWith(new UniquenessValidator("name")).message("This name is already taken.");	
+    	}
 
 	// Constructor
 	public User() {
@@ -19,6 +18,8 @@ public class User extends Model {
 	// Constructor
 	public User(String name, String pass) {
 		set("password", pass, "name", name, "score", "0", "globalLives", "5");
+		saveIt();
+		set("lastupdate", getDate("created_at"));
 		saveIt();
 	}
 
