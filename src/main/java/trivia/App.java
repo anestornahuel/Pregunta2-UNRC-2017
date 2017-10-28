@@ -8,6 +8,9 @@ import org.javalite.activejdbc.Base;
 
 import java.util.*;
 
+import  java.text.DateFormat;
+import  java.text.SimpleDateFormat;
+
 import spark.ModelAndView;
 import spark.template.mustache.MustacheTemplateEngine;
 
@@ -15,6 +18,7 @@ public class App {
 
 	static private final int CATEGORIES = 6; 		// Cantidad de categorias
 	static private final String LIFES = "3"; 		// Vidas al iniciar un juego
+	static public final int LIFECOST = 50;		// Precio de una vida
 	static private final String driverdb = "com.mysql.jdbc.Driver";
 	static private final String basedb = "jdbc:mysql://localhost/trivia";
 	static private final String userdb = "root";
@@ -74,6 +78,8 @@ public class App {
 				String puntos = user.getString("score");
 				map.put("usuario", usuario);
 				map.put("puntos", puntos);
+				String vidas = user.getString("globalLives");
+				map.put("vidas", vidas);
 				return new ModelAndView(map, "principal.html");
 			}else {
 				String entrar = rq.queryParams("entrar");
@@ -88,6 +94,8 @@ public class App {
 						String puntos = user.getString("score");
 						map.put("puntos", puntos);
 						rq.session().attribute("currentUser", user.getString("id"));
+						String vidas = user.getString("globalLives");
+						map.put("vidas", vidas);
 						return new ModelAndView(map, "principal.html");
 					}else {
 						map.put("estado", "Nombre de usuario o password incorrecto");
@@ -137,34 +145,59 @@ public class App {
 				String continuar = rq.queryParams("continuar");
 				map.put("usuario", usuario);
 				map.put("puntos", puntos);
+				DateFormat dateFormat = new SimpleDateFormat("dd");
+				Date lastupdateDate = user.getDate("lastupdate");
+				Date currentDate = new Date();
+				if (!(dateFormat.format(lastupdateDate)).equals(dateFormat.format(currentDate))) {
+					user.updateLives(-user.lives());
+					user.updateLives(5);
+					user.set("lastupdate", user.getDate("updated_at"));
+					user.saveIt();
+				}
 				if (currentGame != null) {
 					map.put("estado", "Continuas jugando");
 					return new ModelAndView(map, "generar.html");
 				}else {
-					String jugar = rq.queryParams("jugar");
-					if (jugar != null) {
-						map.put("estado", "Jugar un nuevo juego");
-						return new ModelAndView(map, "generar.html");
-					}else {
-						String administrar = rq.queryParams("crearpregunta");
-						if (administrar != null) {
-							map.put("estado", "Para crear una pregunta completa los siguientes campos");
-							return new ModelAndView(map, "crearpregunta.html");
+					if (rq.queryParams("comprarvida") != null) {
+						if (user.score() >= LIFECOST) {
+							user.updateScore(-LIFECOST);
+							user.updateLives(1);
+							map.put("estado", "Compraste una vida por " + LIFECOST + " puntos");
 						}else {
-							String exit = rq.queryParams("exit");
-							if (exit != null) {
-								rq.session().removeAttribute("currentUser");
-								return new ModelAndView(null, "logueo.html");
+							map.put("estado", "No tienes puntos suficientes, necesitas " + LIFECOST);
+						}
+						user = User.findFirst("id = ?", currentUser);
+						String vidas = user.getString("globalLives");
+						puntos = user.getString("score");
+						map.put("puntos", puntos);
+						map.put("vidas", vidas);
+						return new ModelAndView(map, "principal.html");							
+					}else {						
+						String jugar = rq.queryParams("jugar");
+						if (jugar != null) {
+							map.put("estado", "Jugar un nuevo juego");
+							return new ModelAndView(map, "generar.html");
+						}else {
+							String administrar = rq.queryParams("crearpregunta");
+							if (administrar != null) {
+								map.put("estado", "Para crear una pregunta completa los siguientes campos");
+								return new ModelAndView(map, "crearpregunta.html");
 							}else {
-								// Todos los usuarios ordenados de mayor a menor puntaje
-								List<User> usuarios = User.findAll().limit(10).orderBy("score desc");
-								for (int i = 0; i < usuarios.size(); i++) {
-									String add = "user" + i;
-									map.put(add, usuarios.get(i).getString("name"));
-									add = "score" + i;
-									map.put(add, usuarios.get(i).getString("score"));
+								String exit = rq.queryParams("exit");
+								if (exit != null) {
+									rq.session().removeAttribute("currentUser");
+									return new ModelAndView(null, "logueo.html");
+								}else {
+									// Todos los usuarios ordenados de mayor a menor puntaje
+									List<User> usuarios = User.findAll().limit(10).orderBy("score desc");
+									for (int i = 0; i < usuarios.size(); i++) {
+										String add = "user" + i;
+										map.put(add, usuarios.get(i).getString("name"));
+										add = "score" + i;
+										map.put(add, usuarios.get(i).getString("score"));
+									}
+									return new ModelAndView(map, "ranking.html");								
 								}
-								return new ModelAndView(map, "ranking.html");								
 							}
 						}
 					}
@@ -187,10 +220,18 @@ public class App {
 				String continuar = rq.queryParams("continuar");
 				map.put("usuario", usuario);
 				map.put("puntos", puntos);
+				String vidas = user.getString("globalLives");
+				map.put("vidas", vidas);
 				if (continuar != null) {
 					Game game;
 					if (currentGame == null) {
 						game = new Game(currentUser, LIFES);
+						if (user.lives() <= 0) {
+							map.put("estado", "No tienes vidas suficientes para iniciar el juego");
+							return new ModelAndView(map, "principal.html");
+						}else {
+							user.reduceLive();
+						}
 					}else {
 						game = Game.findFirst("id = ?", currentGame);	
 					}
@@ -200,11 +241,11 @@ public class App {
 						Question ques = generarPreguntaAleatoria();
 						String currentQuestion = ques.getString("id");
 						String categoria = Category.findFirst("id = ?", ques.getString("category_id")).getString("name");
-						String vidas = game.getString("lifes");
+						String gamelife = game.getString("lifes");
 						String pregunta = ques.getString("question");
 						String incorrect = ("1" == ques.getString("correct")) ? "2" :  "1";
 						map.put("categoria", categoria);
-						map.put("vidas", vidas);
+						map.put("vidas", gamelife);
 						map.put("pregunta", pregunta);
 						map.put("rpta1", ques.getString("answer1").replace(' ', '_'));				
 						map.put("rpta2", ques.getString("answer2").replace(' ', '_'));
@@ -280,6 +321,8 @@ public class App {
 				String puntos = user.getString("score");
 				map.put("usuario", usuario);
 				map.put("puntos", puntos);
+				String vidas = user.getString("globalLives");
+				map.put("vidas", vidas);
 				if (rq.queryParams("atras") != null) {					
 					return new ModelAndView(map, "principal.html");
 				}else {
@@ -295,8 +338,11 @@ public class App {
 			if (currentUser == null) {
 				return new ModelAndView(null, "logueo.html");
 			}else {
-				map.put("usuario", User.findFirst("id = ?", currentUser).getString("name"));
-				map.put("puntos", User.findFirst("id = ?", currentUser).getString("score"));
+				User user = User.findFirst("id = ?", currentUser);
+				String vidas = user.getString("globalLives");
+				map.put("usuario", user.getString("name"));
+				map.put("puntos", user.getString("score"));
+				map.put("vidas", vidas);
 				if (rq.queryParams("newquestion") != null) {
 					String question = rq.queryParams("question");
 					String categoria = rq.queryParams("categoria");
@@ -304,7 +350,6 @@ public class App {
 					String ans2 = rq.queryParams("ans2");
 					String ans3 = rq.queryParams("ans3");
 					String correct = rq.queryParams("correct");					
-					int correcto = Integer.parseInt(correct);
 					if (correct != null && correct.compareTo("1") >= 0 && correct.compareTo("3") <= 0 &&question != null && categoria != null && ans1 != null && ans2 != null && ans3 != null) {
 						// Informacion correcta en los campos			
 						Category catName = Category.findFirst("name = ?", categoria);
