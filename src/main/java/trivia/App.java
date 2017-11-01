@@ -188,15 +188,21 @@ public class App {
 									rq.session().removeAttribute("currentUser");
 									return new ModelAndView(null, "logueo.html");
 								}else {
-									// Todos los usuarios ordenados de mayor a menor puntaje
-									List<User> usuarios = User.findAll().limit(10).orderBy("score desc");
-									for (int i = 0; i < usuarios.size(); i++) {
-										String add = "user" + i;
-										map.put(add, usuarios.get(i).getString("name"));
-										add = "score" + i;
-										map.put(add, usuarios.get(i).getString("score"));
+									if (rq.queryParams("ranking") != null) {
+										// Todos los usuarios ordenados de mayor a menor puntaje
+										List<User> usuarios = User.findAll().limit(10).orderBy("score desc");
+										for (int i = 0; i < usuarios.size(); i++) {
+											String add = "user" + i;
+											map.put(add, usuarios.get(i).getString("name"));
+											add = "score" + i;
+											map.put(add, usuarios.get(i).getString("score"));
+										}
+										return new ModelAndView(map, "ranking.html");										
+									}else {
+										// Modo duelo
+										map.put("estado", "El modo duelo no esta disponible");
+										return new ModelAndView(map, "principal.html");
 									}
-									return new ModelAndView(map, "ranking.html");								
 								}
 							}
 						}
