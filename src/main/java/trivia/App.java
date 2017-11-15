@@ -14,6 +14,10 @@ import  java.text.SimpleDateFormat;
 import spark.ModelAndView;
 import spark.template.mustache.MustacheTemplateEngine;
 
+import java.util.concurrent.ConcurrentHashMap;
+import org.eclipse.jetty.websocket.api.Session;
+import org.json.JSONObject;
+
 public class App {
 
 	static private final int CATEGORIES = 6; 		// Cantidad de categorias
@@ -23,7 +27,25 @@ public class App {
 	static private final String basedb = "jdbc:mysql://localhost/trivia";
 	static private final String userdb = "root";
 	static private final String passworddb = "root";
-     
+
+    // Para webSocket <SessionWS, Nombre>
+    static private Map<Session, String> usernames = new ConcurrentHashMap<>();
+
+    // Elimina un usuario de la lista de usuarios en modo duelo
+    public static void removeUser(Session user) {
+    	usernames.remove(user);
+    }
+
+    // Interpreta el mensaje recibido y realiza la accion correspondiente
+    public static void manageMessage(Session sender, String message) {
+    	JSONObject obj = new JSONObject(message);
+    	String type = new String(obj.getString("type"));
+		if (type.equals("Entrar")) {
+			String sendername = new String(obj.getString("sendername"));
+	    	usernames.put(sender, sendername);
+	    }
+    }
+
 	// Obtiene una pregunta aleatoria de la n-esesima categoria
 	private static Question generarPreguntaAleatoria(int n) {
 		String idcat = (Category.where("id >= ?", "0").get(n)).getString("id");
@@ -44,6 +66,8 @@ public class App {
 
 	public static void main(String[] args) {
 		staticFileLocation("/public");
+		webSocket("/duelo", Pregunta2WebSocketHandler.class);
+		init();
 		
 		Base.open(driverdb, basedb, userdb, passworddb);		
 		if (Category.count() == 0) {
@@ -62,8 +86,37 @@ public class App {
 		// Principal
 		get("/", (rq, rs) -> {
 			Map map = new HashMap();
-			map.put("estado", "Bienvenido a Pregunta2");
-			return new ModelAndView(map, "logueo.html");
+			String currentUser = rq.session().attribute("currentUser");
+			if (currentUser != null) {
+				// Si hay usuario registrado
+				User user = User.findFirst("id = ?", currentUser);
+				String usuario = user.getString("name");
+				String puntos = user.getString("score");
+				map.put("usuario", usuario);
+				map.put("puntos", puntos);
+				String vidas = user.getString("globalLives");
+				map.put("vidas", vidas);
+				return new ModelAndView(map, "principal.html");
+			}else {
+				// Si no hay usuario registrado
+				map.put("estado", "Bienvenido a Pregunta2");
+				return new ModelAndView(map, "logueo.html");
+			}
+		},new MustacheTemplateEngine());
+
+		get("/espera", (rq, rs) -> {
+			Map map = new HashMap();
+			String currentUser = rq.session().attribute("currentUser");
+			if (currentUser != null) {
+				// Si hay usuario registrado
+				User user = User.findFirst("id = ?", currentUser);
+				String usuario = user.getString("name");
+				map.put("usuario", usuario);
+				return new ModelAndView(map, "espera.html");
+			}else {
+				// Si no hay usuario registrado
+				return new ModelAndView(null, "logueo.html");
+			}
 		},new MustacheTemplateEngine());
 
 		// Inicio de secion y registro de nuevo usuario
@@ -188,21 +241,15 @@ public class App {
 									rq.session().removeAttribute("currentUser");
 									return new ModelAndView(null, "logueo.html");
 								}else {
-									if (rq.queryParams("ranking") != null) {
-										// Todos los usuarios ordenados de mayor a menor puntaje
-										List<User> usuarios = User.findAll().limit(10).orderBy("score desc");
-										for (int i = 0; i < usuarios.size(); i++) {
-											String add = "user" + i;
-											map.put(add, usuarios.get(i).getString("name"));
-											add = "score" + i;
-											map.put(add, usuarios.get(i).getString("score"));
-										}
-										return new ModelAndView(map, "ranking.html");										
-									}else {
-										// Modo duelo
-										map.put("estado", "El modo duelo no esta disponible");
-										return new ModelAndView(map, "principal.html");
+									// Todos los usuarios ordenados de mayor a menor puntaje
+									List<User> usuarios = User.findAll().limit(10).orderBy("score desc");
+									for (int i = 0; i < usuarios.size(); i++) {
+										String add = "user" + i;
+										map.put(add, usuarios.get(i).getString("name"));
+										add = "score" + i;
+										map.put(add, usuarios.get(i).getString("score"));
 									}
+									return new ModelAndView(map, "ranking.html");
 								}
 							}
 						}
