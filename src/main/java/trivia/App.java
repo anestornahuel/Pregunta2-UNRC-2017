@@ -15,6 +15,7 @@ import spark.ModelAndView;
 import spark.template.mustache.MustacheTemplateEngine;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.jetty.websocket.api.Session;
 import org.json.JSONObject;
 
@@ -30,9 +31,16 @@ public class App {
 
     // Para webSocket <SessionWS, Nombre>
     static private Map<Session, String> usernames = new ConcurrentHashMap<>();
+    // Almacena los duelos <Desafiado, Lista de desafiantes>
+    static private Map<String, CopyOnWriteArrayList<String>> duels = new ConcurrentHashMap<>();
 
     // Elimina un usuario de la lista de usuarios en modo duelo
     public static void removeUser(Session user) {
+    	String username = usernames.get(user);
+    	duels.remove(username);
+    	for (CopyOnWriteArrayList array : duels.values()) {
+    		array.remove(username);
+    	}
     	usernames.remove(user);
     }
 
@@ -43,6 +51,7 @@ public class App {
     	        session.getRemote().sendString(String.valueOf(new JSONObject()
     	            .put("type", "Actualizar")
     	            .put("userlist", usernames.values())
+    	            .put("duelist", duels.get(usernames.get(session)))
     	        ));
     	    } catch (Exception e) {
     	        e.printStackTrace();
@@ -57,7 +66,17 @@ public class App {
 		if (type.equals("Entrar")) {
 			String sendername = new String(obj.getString("sendername"));
 	    	usernames.put(sender, sendername);
+    		CopyOnWriteArrayList array = new CopyOnWriteArrayList();
+    		duels.put(sendername, array);
 	    	update();
+	    }else if (type.equals("Desafiar")) {
+    		String opponentname = new String(obj.getString("opponentname"));
+    		String sendername = usernames.get(sender);
+    		CopyOnWriteArrayList array = duels.get(opponentname);
+	    	if (!(opponentname.equals(sendername) || array.contains(sendername))) {
+	    		array.add(sendername);
+	    		update();
+	    	}
 	    }
     }
 
