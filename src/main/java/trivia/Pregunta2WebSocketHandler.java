@@ -8,6 +8,7 @@ public class Pregunta2WebSocketHandler {
 	@OnWebSocketClose
 	public void onClose(Session user, int statusCode, String reason) {
 		App.removeUser(user);
+		App.update();
 	}
 
     @OnWebSocketMessage
