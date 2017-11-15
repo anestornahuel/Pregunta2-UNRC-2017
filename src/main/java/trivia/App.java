@@ -36,6 +36,20 @@ public class App {
     	usernames.remove(user);
     }
 
+    // Envia a los usuarios la instruccion de actualizarse
+    public static void update() {
+    	usernames.keySet().stream().filter(Session::isOpen).forEach(session -> {
+    	    try {
+    	        session.getRemote().sendString(String.valueOf(new JSONObject()
+    	            .put("type", "Actualizar")
+    	            .put("userlist", usernames.values())
+    	        ));
+    	    } catch (Exception e) {
+    	        e.printStackTrace();
+    	    }
+    	});
+    }
+
     // Interpreta el mensaje recibido y realiza la accion correspondiente
     public static void manageMessage(Session sender, String message) {
     	JSONObject obj = new JSONObject(message);
@@ -43,6 +57,7 @@ public class App {
 		if (type.equals("Entrar")) {
 			String sendername = new String(obj.getString("sendername"));
 	    	usernames.put(sender, sendername);
+	    	update();
 	    }
     }
 
