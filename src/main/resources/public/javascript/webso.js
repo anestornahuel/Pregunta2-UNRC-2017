@@ -16,9 +16,14 @@ function sendEntrar(username) {
     webSocket.send(strng); 
 }
 
-//Helper function for selecting element by id
-function id(id) {
-    return document.getElementById(id);
+// Mensaje para desafiar en modo duelo a otro usuario
+function sendDesafiar(opponent) {
+    var msg = {
+        type : "Desafiar",
+        opponentname : opponent
+    }
+    var strng = JSON.stringify(msg)
+    webSocket.send(strng); 
 }
 
 // Interpreta el mensaje
@@ -33,11 +38,24 @@ function message(msg) {
             user + 
             "<button onclick=\"sendDesafiar('" + user + "')\">Desafiar</button>" +
             "</li>");
-        });   
+        });
+        id("duelist").innerHTML = "";
+        data.duelist.forEach(function (user) {
+            insert("duelist", 
+            "<li>" + 
+            user +  
+            "<button onclick=\"sendJugar('" + user + "')\">Jugar</button>" +
+            "</li>");
+        });
     } 
 }
 
 //Helper function for inserting HTML as the first child of an element
 function insert(targetId, message) {
     id(targetId).insertAdjacentHTML("afterbegin", message);
+}
+
+//Helper function for selecting element by id
+function id(id) {
+    return document.getElementById(id);
 }
