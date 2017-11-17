@@ -31,33 +31,42 @@ public class App {
 
     // Para webSocket <SessionWS, Nombre>
     static private Map<Session, String> usernames = new ConcurrentHashMap<>();
-    // Almacena los duelos <Desafiado, Lista de desafiantes>
-    static private Map<String, CopyOnWriteArrayList<String>> duels = new ConcurrentHashMap<>();
 
     // Elimina un usuario de la lista de usuarios en modo duelo
     public static void removeUser(Session user) {
-    	String username = usernames.get(user);
-    	duels.remove(username);
-    	for (CopyOnWriteArrayList array : duels.values()) {
-    		array.remove(username);
-    	}
     	usernames.remove(user);
     }
 
+
+    
+
     // Envia a los usuarios la instruccion de actualizarse
     public static void update() {
+		Base.open(driverdb, basedb, userdb, passworddb);		
     	usernames.keySet().stream().filter(Session::isOpen).forEach(session -> {
     	    try {
     	        session.getRemote().sendString(String.valueOf(new JSONObject()
     	            .put("type", "Actualizar")
     	            .put("userlist", usernames.values())
-    	            .put("duelist", duels.get(usernames.get(session)))
+    	            .put("duelist", Duel.desafiants(usernames.get(session)))
     	        ));
     	    } catch (Exception e) {
     	        e.printStackTrace();
     	    }
     	});
+		Base.close();
     }
+
+    private static void sendError(Session user, String message) {
+    	try {
+    	    user.getRemote().sendString(String.valueOf(new JSONObject()
+    	        .put("type", "Error")
+    	        .put("message", message)
+    	    ));
+    	} catch (Exception e) {
+    	    e.printStackTrace();
+    	}
+    }    
 
     // Interpreta el mensaje recibido y realiza la accion correspondiente
     public static void manageMessage(Session sender, String message) {
@@ -66,17 +75,27 @@ public class App {
 		if (type.equals("Entrar")) {
 			String sendername = new String(obj.getString("sendername"));
 	    	usernames.put(sender, sendername);
-    		CopyOnWriteArrayList array = new CopyOnWriteArrayList();
-    		duels.put(sendername, array);
-	    	update();
+	    	update();	
 	    }else if (type.equals("Desafiar")) {
-    		String opponentname = new String(obj.getString("opponentname"));
+			Base.open(driverdb, basedb, userdb, passworddb);		
     		String sendername = usernames.get(sender);
-    		CopyOnWriteArrayList array = duels.get(opponentname);
-	    	if (!(opponentname.equals(sendername) || array.contains(sendername))) {
-	    		array.add(sendername);
-	    		update();
-	    	}
+			User user = User.findFirst("name = ?", sendername);
+    		int score = obj.getInt("score");
+			if (user.lives() <= 0 || user.score() <= score) {
+				String aux = (user.lives() <= 0)? "vidas" : "puntos";
+				sendError(sender, "No tiene " + aux + " suficientes");
+			} else {	
+	    		String opponentname = new String(obj.getString("opponentname"));
+		    	if (!(opponentname.equals(sendername) || Duel.exist(sendername, opponentname))) {
+		    		// Si no se esta "autodesafiando" y el desafio no existe
+		    		Duel duel = new Duel(sendername, opponentname, score);
+		    		duel.saveIt();
+					Base.close();
+		    		update();
+					Base.open(driverdb, basedb, userdb, passworddb);		
+		    	}		
+			}
+			Base.close();
 	    }
     }
 
