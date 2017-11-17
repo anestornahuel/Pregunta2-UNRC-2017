@@ -14,5 +14,6 @@ public class Pregunta2WebSocketHandler {
     @OnWebSocketMessage
     public void onMessage(Session user, String message) {
         App.manageMessage(user, message);
+        System.out.println(message);
     }
 }
