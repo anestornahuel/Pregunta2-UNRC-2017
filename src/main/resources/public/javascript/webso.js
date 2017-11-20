@@ -23,6 +23,18 @@ function sendEntrar(username) {
     webSocket.send(strng); 
 }
 
+
+// 
+function sendAceptar(opponent) {
+    var msg = {
+        type : "Aceptar",
+        score : id("score").value,
+        opponentname : opponent
+    }
+    var strng = JSON.stringify(msg)
+    webSocket.send(strng); 
+}
+
 // Mensaje para entrar al conunto de usuarios esperando la respuesta del oponente
 function sendEsperando() {
     var msg = {
@@ -68,10 +80,11 @@ function message(msg) {
                 "<li>" + 
                 user +  
                 "<form action=\"/jugando\" method=\"post\">" + 
-                "<input type=\"submit\" value=\"Jugar vs " + user + "\" name=\"duelo\"> </form> " +
+                "<input type=\"submit\" onclick=\"sendAceptar('" + user + "')\" " +
+                " value=\"Jugar vs " + user + "\" name=\"duelo\"> </form> " +
                 "</li>");
             });
-            break;
+            break; 
         case "Jugar":
             if (window.location.pathname == "/jugando") {
                 id("continuarButton").click();
