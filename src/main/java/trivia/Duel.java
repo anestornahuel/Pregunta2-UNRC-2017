@@ -65,7 +65,7 @@ public class Duel extends Model {
 
 	// Si existe duelo entre los usuarios u1 y u2 
 	public static boolean exist(String u1, String u2) {
-		return getFirst(u1, u2) != null && getFirst(u2, u1) != null;
+		return getFirst(u1, u2) != null || getFirst(u2, u1) != null;
 	}
 
 	// Retorna los desafiantes de un usuario dado
@@ -76,9 +76,9 @@ public class Duel extends Model {
 
 	// El usuario u respondio correctamente
 	public void correct(String u) {
-		if (u == getString("user1")) {
+		if (u.equals(getString("user1"))) {
 			set("corrects1", getInteger("corrects1") + 1);
-		}else if (u == getString("user2")) {
+		}else if (u.equals(getString("user2"))) {
 			set("corrects2", getInteger("corrects2") + 1);
 		}
 		saveIt();
