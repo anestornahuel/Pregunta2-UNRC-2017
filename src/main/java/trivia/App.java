@@ -16,6 +16,7 @@ import spark.template.mustache.MustacheTemplateEngine;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import org.eclipse.jetty.websocket.api.Session;
 import org.json.JSONObject;
 
@@ -31,10 +32,13 @@ public class App {
 
     // Para webSocket <SessionWS, Nombre>
     static private Map<Session, String> usernames = new ConcurrentHashMap<>();
+    // Usuarios esperando la respuesta del oponente
+    static private Queue<Session> suspenseSet = new ConcurrentLinkedQueue<>();
 
     // Elimina un usuario de la lista de usuarios en modo duelo
     public static void removeUser(Session user) {
     	usernames.remove(user);
+    	suspenseSet.remove(user);
     }   
 
     // Envia a los usuarios la instruccion de actualizarse
@@ -52,6 +56,19 @@ public class App {
     	    }
     	});
 		Base.close();
+    }
+
+    // Envia a los usuarios esperando la respuesta la instruccion de actualizacion
+    public static void updateSuspense() {
+    	suspenseSet.stream().filter(Session::isOpen).forEach(session -> {
+    	    try {
+    	        session.getRemote().sendString(String.valueOf(new JSONObject()
+    	            .put("type", "Jugar")
+    	        ));
+    	    } catch (Exception e) {
+    	        e.printStackTrace();
+    	    }
+    	});
     }
 
     private static void sendError(Session user, String message) {
@@ -93,6 +110,8 @@ public class App {
 		    	}		
 			}
 			Base.close();
+	    }else if (type.equals("Esperar")) {
+	    	suspenseSet.add(sender);
 	    }
     }
 
@@ -364,7 +383,7 @@ public class App {
 						map.put("estado","Duelo " + username + " vs " + opponentname);
 						Duel duelTurno = Duel.getFirst(opponentname, username);
 						rq.session().attribute("currentDuel", duelTurno.getString("id"));
-						String score1 = duelTurno.getString("corrects1");
+						String score1 = duelTurno.getString("corrects2");
 						String score2 = duelTurno.getString("corrects1");
 						map.put("estado1", "Resultado parcial: " + score1 + " - " + score2);
 						return new ModelAndView(map,"generar.html");
@@ -425,6 +444,10 @@ public class App {
 								duel.correct(username);
 								duel.changeTurn();
 								map.put("tipo", "duelo");
+								Base.close();
+								update();
+								Base.open(driverdb, basedb, userdb, passworddb);	
+								updateSuspense();
 							}
 						}else {
 							// Incorrecto
@@ -440,6 +463,10 @@ public class App {
 								Duel duel = Duel.getFirst(Integer.parseInt(currentDuel));
 								duel.changeTurn();
 								map.put("tipo", "duelo");
+								Base.close();
+								update();
+								Base.open(driverdb, basedb, userdb, passworddb);	
+								updateSuspense();
 							}				
 						}
 						return new ModelAndView(map, "generar.html");
@@ -456,6 +483,10 @@ public class App {
 							Duel duel = Duel.getFirst(Integer.parseInt(currentDuel));
 							duel.changeTurn();
 							map.put("tipo", "duelo");
+							Base.close();
+							update();
+							Base.open(driverdb, basedb, userdb, passworddb);
+							updateSuspense();
 						}
 						return new ModelAndView(map, "generar.html");
 					}

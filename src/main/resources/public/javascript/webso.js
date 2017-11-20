@@ -8,6 +8,9 @@ webSocket.onopen = function() {
     if (window.location.pathname == "/espera") {
         id("entrarButton").click();
     }
+    if (window.location.pathname == "/jugando") {
+        sendEsperando();
+    }
 }
 
 // Mensaje para entrar a la lista de usuarios en modo duelo
@@ -15,6 +18,15 @@ function sendEntrar(username) {
     var msg = {
         type : "Entrar",
         sendername : username
+    }
+    var strng = JSON.stringify(msg)
+    webSocket.send(strng); 
+}
+
+// Mensaje para entrar al conunto de usuarios esperando la respuesta del oponente
+function sendEsperando() {
+    var msg = {
+        type : "Esperar",
     }
     var strng = JSON.stringify(msg)
     webSocket.send(strng); 
@@ -30,22 +42,6 @@ function sendDesafiar(opponent) {
         }
         var strng = JSON.stringify(msg)
         webSocket.send(strng); 
-    } else {
-        id("score").value = "";
-        id("estado").innerHTML = "Debes ingresar la cantidad de puntos a apostar";
-    }
-}
-
-// Mensaje para empezar a jugar en modo duelo
-function sendJugar(opponent) {
-    if (id("score").value != "") {
-        var msg = {
-            type : "Jugar",
-            score : id("score").value,
-            opponentname : opponent
-        }
-        var strng = JSON.stringify(msg)
-        webSocket.send(strng);
     } else {
         id("score").value = "";
         id("estado").innerHTML = "Debes ingresar la cantidad de puntos a apostar";
@@ -75,6 +71,11 @@ function message(msg) {
                 "<input type=\"submit\" value=\"Jugar vs " + user + "\" name=\"duelo\"> </form> " +
                 "</li>");
             });
+            break;
+        case "Jugar":
+            if (window.location.pathname == "/jugando") {
+                id("continuarButton").click();
+            }
             break;
         case "Error":
             id("estado").innerHTML = data.message;
