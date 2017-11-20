@@ -12,6 +12,10 @@ public class Game extends Model {
 		super();
 	}
 
+	public int lifes() {
+		return Integer.parseInt(this.getString("lifes"));
+	}
+
 	public Game(String uid, String lifes) {
 		set("user_id", uid);
 		set("lifes", lifes);
@@ -23,5 +27,10 @@ public class Game extends Model {
 		int lifes = Integer.parseInt(this.getString("lifes")) - 1;
 		set("lifes", lifes);
 		saveIt();
+	}
+
+	// Devuelve el juego del usuario dado
+	public static Game getFirst(String uid) {
+		return findFirst("user_id = ?", uid);
 	}
 }

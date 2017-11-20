@@ -16,12 +16,13 @@
 			<h1>{{estado}}</h1>
 			<h1>{{estado1}}</h1>
 			<h1>{{estado2}}</h1>
-			<form action="/generar" method="post">
-				<input type="submit" value="Continuar" name="continuar">
+			<h1>{{estado2}}</h1>
+			<form action="/jugando" method="post">
+				<input type="submit" value="Continuar" name="{{tipo}}">
 			</form>
 			<h4> <br> </h4>
-			<form action="/generar" method="post">
-				<input type="submit" value="Abandonar" name="abandonar">
+			<form action="/jugando" method="post">
+				<input type="submit" value="Abandonar" name="{{tipo}}">
 			</form>	
 			<br><br><br>	
 		</section>

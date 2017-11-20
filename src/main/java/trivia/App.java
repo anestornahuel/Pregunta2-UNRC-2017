@@ -35,10 +35,7 @@ public class App {
     // Elimina un usuario de la lista de usuarios en modo duelo
     public static void removeUser(Session user) {
     	usernames.remove(user);
-    }
-
-
-    
+    }   
 
     // Envia a los usuarios la instruccion de actualizarse
     public static void update() {
@@ -81,7 +78,7 @@ public class App {
     		String sendername = usernames.get(sender);
 			User user = User.findFirst("name = ?", sendername);
     		int score = obj.getInt("score");
-			if (user.lives() <= 0 || user.score() <= score) {
+			if (user.lives() <= 0 || user.score() < score) {
 				String aux = (user.lives() <= 0)? "vidas" : "puntos";
 				sendError(sender, "No tiene " + aux + " suficientes");
 			} else {	
@@ -118,6 +115,7 @@ public class App {
 	}
 
 	public static void main(String[] args) {
+
 		staticFileLocation("/public");
 		webSocket("/duelo", Pregunta2WebSocketHandler.class);
 		init();
@@ -240,7 +238,6 @@ public class App {
 		post("/principal", (rq, rs) -> {
 			Map map = new HashMap();
 			String currentUser = rq.session().attribute("currentUser");
-			String currentGame = rq.session().attribute("currentGame");
 			if (currentUser == null) {
 				// Si no hay usuario registrado
 				return new ModelAndView(null, "logueo.html");
@@ -248,7 +245,6 @@ public class App {
 				User user = User.findFirst("id = ?", currentUser);
 				String usuario = user.getString("name");
 				String puntos = user.getString("score");
-				String continuar = rq.queryParams("continuar");
 				map.put("usuario", usuario);
 				map.put("puntos", puntos);
 				DateFormat dateFormat = new SimpleDateFormat("dd");
@@ -260,122 +256,31 @@ public class App {
 					user.set("lastupdate", user.getDate("updated_at"));
 					user.saveIt();
 				}
-				if (currentGame != null) {
-					map.put("estado", "Continuas jugando");
-					return new ModelAndView(map, "generar.html");
+				if (rq.queryParams("comprarvida") != null) {
+					if (user.score() >= LIFECOST) {
+						user.updateScore(-LIFECOST);
+						user.updateLives(1);
+						map.put("estado", "Compraste una vida por " + LIFECOST + " puntos");
+					}else {
+						map.put("estado", "No tienes puntos suficientes, necesitas " + LIFECOST);
+					}
+					user = User.findFirst("id = ?", currentUser);
+					String vidas = user.getString("globalLives");
+					puntos = user.getString("score");
+					map.put("puntos", puntos);
+					map.put("vidas", vidas);
+					return new ModelAndView(map, "principal.html");							
+				}else if (rq.queryParams("crearpregunta") != null) {
+					map.put("estado", "Para crear una pregunta completa los siguientes campos");
+					return new ModelAndView(map, "crearpregunta.html");
 				}else {
-					if (rq.queryParams("comprarvida") != null) {
-						if (user.score() >= LIFECOST) {
-							user.updateScore(-LIFECOST);
-							user.updateLives(1);
-							map.put("estado", "Compraste una vida por " + LIFECOST + " puntos");
-						}else {
-							map.put("estado", "No tienes puntos suficientes, necesitas " + LIFECOST);
-						}
-						user = User.findFirst("id = ?", currentUser);
-						String vidas = user.getString("globalLives");
-						puntos = user.getString("score");
-						map.put("puntos", puntos);
-						map.put("vidas", vidas);
-						return new ModelAndView(map, "principal.html");							
-					}else {						
-						String jugar = rq.queryParams("jugar");
-						if (jugar != null) {
-							map.put("estado", "Jugar un nuevo juego");
-							return new ModelAndView(map, "generar.html");
-						}else {
-							String administrar = rq.queryParams("crearpregunta");
-							if (administrar != null) {
-								map.put("estado", "Para crear una pregunta completa los siguientes campos");
-								return new ModelAndView(map, "crearpregunta.html");
-							}else {
-								String exit = rq.queryParams("exit");
-								if (exit != null) {
-									rq.session().removeAttribute("currentUser");
-									return new ModelAndView(null, "logueo.html");
-								}else {
-									// Todos los usuarios ordenados de mayor a menor puntaje
-									List<User> usuarios = User.findAll().limit(10).orderBy("score desc");
-									for (int i = 0; i < usuarios.size(); i++) {
-										String add = "user" + i;
-										map.put(add, usuarios.get(i).getString("name"));
-										add = "score" + i;
-										map.put(add, usuarios.get(i).getString("score"));
-									}
-									return new ModelAndView(map, "ranking.html");
-								}
-							}
-						}
-					}
-				}
-			}
-		},new MustacheTemplateEngine());
-
-		// Muestra si la pregunta fue correcta o incorreccta y genera una nueva pregunta aleatoria
-		post("/generar", (rq, rs) -> {
-			Map map = new HashMap();
-			String currentUser = rq.session().attribute("currentUser");
-			String currentGame = rq.session().attribute("currentGame");	
-			if (currentUser == null) {
-				// Si no hay usuario registrado
-				return new ModelAndView(null, "logueo.html");
-			}else {
-				User user = User.findFirst("id = ?", currentUser);
-				String usuario = user.getString("name");
-				String puntos = user.getString("score");
-				String continuar = rq.queryParams("continuar");
-				map.put("usuario", usuario);
-				map.put("puntos", puntos);
-				String vidas = user.getString("globalLives");
-				map.put("vidas", vidas);
-				if (continuar != null) {
-					Game game;
-					if (currentGame == null) {
-						game = new Game(currentUser, LIFES);
-						if (user.lives() <= 0) {
-							map.put("estado", "No tienes vidas suficientes para iniciar el juego");
-							return new ModelAndView(map, "principal.html");
-						}else {
-							user.reduceLive();
-						}
+					// String exit = rq.queryParams("exit");
+					if (rq.queryParams("exit") != null) {
+						rq.session().removeAttribute("currentUser");
+						return new ModelAndView(null, "logueo.html");
 					}else {
-						game = Game.findFirst("id = ?", currentGame);	
-					}
-					currentGame = game.getString("id");
-					rq.session().attribute("currentGame", currentGame);
-					if (Integer.parseInt(game.getString("lifes")) >= 0) {
-						Question ques = generarPreguntaAleatoria();
-						String currentQuestion = ques.getString("id");
-						String categoria = Category.findFirst("id = ?", ques.getString("category_id")).getString("name");
-						String gamelife = game.getString("lifes");
-						String pregunta = ques.getString("question");
-						String incorrect = ("1" == ques.getString("correct")) ? "2" :  "1";
-						map.put("categoria", categoria);
-						map.put("vidas", gamelife);
-						map.put("pregunta", pregunta);
-						map.put("rpta1", ques.getString("answer1").replace(' ', '_'));				
-						map.put("rpta2", ques.getString("answer2").replace(' ', '_'));
-						map.put("rpta3", ques.getString("answer3").replace(' ', '_'));
-						map.put("incorrect", incorrect);
-						rq.session().attribute("currentQuestion", currentQuestion);
-						return new ModelAndView(map, "jugando.html");
-					}else {
-						if (currentGame != null) {
-							game = Game.findFirst("id = ?", currentGame);	
-							game.delete();
-							rq.session().removeAttribute("currentGame");
-							return new ModelAndView(map, "principal.html");
-						}
 						return new ModelAndView(map, "principal.html");
 					}
-				}else {
-					if (currentGame != null) {				
-						Game game = Game.findFirst("id = ?", currentGame);
-						game.delete();
-						rq.session().removeAttribute("currentGame");
-					}
-					map.put("estado", "Cancelaste el juego");
-					return new ModelAndView(map, "principal.html");
 				}
 			}
 		},new MustacheTemplateEngine());
@@ -384,56 +289,193 @@ public class App {
 		post("/jugando", (rq, rs) -> {
 			Map map = new HashMap();
 			String currentUser = rq.session().attribute("currentUser");
-			String currentGame = rq.session().attribute("currentGame");
-			String currentQuestion = rq.session().attribute("currentQuestion");		
-			if (currentUser == null || currentGame == null || currentQuestion == null) {
-				return new ModelAndView(null, "logueo.html");
-			}else {
-				Question ques = Question.findFirst("id = ?", currentQuestion);
-				User userp = User.findFirst("id = ?", currentUser);
-				Game game = Game.findFirst("id = ?", currentGame);;
-				String userAns = rq.queryParams("ans");
-				String correctAns = ques.getString("answer" + (ques.getString("correct")));
-				if (rq.queryParams("time") != null) {
-					map.put("estado", "Se acabo el tiempo de respuesta");
-					map.put("estado2", "Correcta: " + correctAns);					
-					game.reduceLife();
-				}else {
-					if (userAns.equals(correctAns.replace(' ', '_'))) {
-						map.put("estado", "Respuesta correcta");
-						map.put("estado1", ques.getString("question"));
-						map.put("estado2", correctAns);	
-						userp.updateScore(1);
-					}else {
-						map.put("estado", "Respuesta incorreccta");
-						map.put("estado1", "Tu respuesta: " + userAns);
-						map.put("estado2", "Correcta: " + correctAns);					
-						game.reduceLife();
-					}					
+			if (currentUser != null) {
+				// Si hay usuario registrado
+				User user = User.findById(Integer.parseInt(currentUser));
+				String username = user.getString("name");
+				map.put("usuario", username);
+				map.put("puntos", user.score());
+				map.put("vidas", user.lives());
+				String comun = rq.queryParams("comun");
+				String duelo = rq.queryParams("duelo");
+				String rptaComun = rq.queryParams("anscomun");
+				String rptaDuelo = rq.queryParams("ansduelo");
+				String timeComun = rq.queryParams("timecomun");
+				String timeDuelo = rq.queryParams("timeduelo");
+				if (comun != null) {
+					// Si es modo de juego Comun
+					Game game = Game.getFirst(currentUser);
+					map.put("tipo", "comun");
+					if (comun.equals("Jugar")) {
+						// Click en jugar
+						if (game != null) {
+							// Si ya estaba en un juego Comun
+							map.put("estado","Continuas jugando");								
+						}else {
+							// Si no estaba en un juego Comun
+							map.put("estado","Jugar un nuevo juego");
+						}
+						return new ModelAndView(map,"generar.html");
+					}else if (comun.equals("Continuar")) {
+						// click en continuar
+						if (game == null) {
+							if (user.lives() > 0) {
+								// Si tiene vidas suficientes (globales)
+								user.reduceLive();
+								game = new Game(currentUser, LIFES);								
+							}else {
+								map.put("estado", "No tienes vidas suficientes");
+								return new ModelAndView(map, "principal.html");								
+							}
+						}
+						if (game.lifes() >= 0) {
+							Question ques = generarPreguntaAleatoria();
+							Integer category = ques.getInteger("category_id");
+							Category cat = Category.findById(category);
+							rq.session().attribute("currentQuestion", ques.getString("id"));
+							map.put("pregunta" ,ques.getString("question"));
+							map.put("rpta1", ques.getString("answer1").replace(' ', '_'));
+							map.put("rpta2", ques.getString("answer2").replace(' ', '_'));
+							map.put("rpta3", ques.getString("answer3").replace(' ', '_'));
+							map.put("vidas", game.lifes());
+							map.put("categoria", cat.getString("name"));
+							return new ModelAndView(map,"jugando.html");							
+						}else {
+							game.delete();
+							map.put("estado", "Termino el juego");
+							return new ModelAndView(map, "principal.html");	
+						}
+					}else if (comun.equals("Abandonar")) {
+						// click en abandonar
+						if (game != null) {
+							game.delete();
+						}
+						map.put("estado", "Cancelaste el juego");
+						map.put("vidas", user.lives());
+						return new ModelAndView(map,"principal.html");	
+					}
+				}else if (duelo != null) {
+					// Si es modo de juego Duelo
+					map.put("tipo", "duelo");
+					String jugar = duelo.substring(0,5);
+					if (jugar.equals("Jugar")) {
+						// Click en jugar
+						String opponentname = duelo.substring(9);
+						map.put("estado","Duelo " + username + " vs " + opponentname);
+						Duel duelTurno = Duel.getFirst(opponentname, username);
+						rq.session().attribute("currentDuel", duelTurno.getString("id"));
+						return new ModelAndView(map,"generar.html");
+					}else if (duelo.equals("Continuar")) {
+						// click en continuar
+						String currentDuel = rq.session().attribute("currentDuel");
+						Duel duel = Duel.getFirst(Integer.parseInt(currentDuel));
+						if (duel == null) {
+							// El juego no existe
+							map.put("estado","El duelo ya termino");
+							return new ModelAndView(map,"principal.html");
+						}else {
+						 	String opponentname = duel.getString("user2");
+						 	if (opponentname.equals(username)) {
+								Integer qn = duel.getInteger("questionNumber");
+								qn = (qn % 2 == 0) ? (qn / 2) : ((qn - 1) / 2);
+								Question ques = generarPreguntaAleatoria(qn);
+								Integer category = ques.getInteger("category_id");
+								Category cat = Category.findById(category);
+								rq.session().attribute("currentQuestion", ques.getString("id"));
+								map.put("pregunta" ,ques.getString("question"));
+								map.put("rpta1", ques.getString("answer1").replace(' ', '_'));
+								map.put("rpta2", ques.getString("answer2").replace(' ', '_'));
+								map.put("rpta3", ques.getString("answer3").replace(' ', '_'));
+								map.put("categoria", cat.getString("name"));
+								return new ModelAndView(map,"jugando.html");							
+						 	}else {					 		
+								map.put("estado","Duelo " + username + " vs " + opponentname);
+								map.put("estado1","Es el turno de " + opponentname);
+								return new ModelAndView(map,"generar.html");
+						 	}
+						}
+					}
+				}else{
+					String currentQuestion = rq.session().attribute("currentQuestion");
+					Question ques = Question.findFirst("id = ?", currentQuestion);
+					String correctAns = ques.getString("answer" + (ques.getString("correct")));
+					String currentDuel = rq.session().attribute("currentDuel");
+					Game game = Game.getFirst(currentUser);
+					if (rptaComun != null || rptaDuelo != null) {
+						// Si respondio
+						String rpta = (rptaComun != null) ? rptaComun : rptaDuelo;
+						if (rpta.equals(correctAns.replace(' ', '_'))) {
+							// Correcto
+							map.put("estado", "Respuesta correcta");
+							map.put("estado1", ques.getString("question"));
+							map.put("estado2", correctAns);	
+							if (rptaComun != null) {
+								// Comun
+								user.updateScore(1);
+								map.put("tipo", "comun");
+							}else {
+								// Duelo
+								Duel duel = Duel.getFirst(Integer.parseInt(currentDuel));
+								duel.correct(currentUser);
+								duel.changeTurn();
+								map.put("tipo", "duelo");
+							}
+						}else {
+							// Incorrecto
+							map.put("estado", "Respuesta incorreccta");
+							map.put("estado1", "Tu respuesta: " + rpta);
+							map.put("estado2", "Correcta: " + correctAns);	
+							if (rptaComun != null) {
+								// Comun
+								game.reduceLife();
+								map.put("tipo", "comun");
+							}else {
+								// Duelo
+								Duel duel = Duel.getFirst(Integer.parseInt(currentDuel));
+								duel.changeTurn();
+								map.put("tipo", "duelo");
+							}				
+						}
+						return new ModelAndView(map, "generar.html");
+					}else if (timeComun != null || timeDuelo != null) {
+						// Si agoto el tiempo de respuesta
+						map.put("estado", "Se acabo el tiempo de respuesta");
+						map.put("estado2", "Correcta: " + correctAns);
+						if (timeComun != null) {
+							// Comun
+							game.reduceLife();
+							map.put("tipo", "comun");
+						}else {
+							// Duelo
+							Duel duel = Duel.getFirst(Integer.parseInt(currentDuel));
+							duel.changeTurn();
+							map.put("tipo", "duelo");
+						}
+						return new ModelAndView(map, "generar.html");
+					}
 				}
-				return new ModelAndView(map, "generar.html");
 			}
+			return new ModelAndView(null, "logueo.html");
 		},new MustacheTemplateEngine());
 
 		// Muestra los 10 jugadores con mayor puntaje
-		post("/ranking",(rq, rs) -> {
+		get("/ranking",(rq, rs) -> {
 			Map map = new HashMap();
-			String currentUser = rq.session().attribute("currentUser"); 
-			if (currentUser == null) {
-				return new ModelAndView(null, "logueo.html");
-			}else {
-				User user = User.findFirst("id = ?", currentUser);
-				String usuario = user.getString("name");
-				String puntos = user.getString("score");
-				map.put("usuario", usuario);
-				map.put("puntos", puntos);
-				String vidas = user.getString("globalLives");
-				map.put("vidas", vidas);
-				if (rq.queryParams("atras") != null) {					
-					return new ModelAndView(map, "principal.html");
-				}else {
-					return new ModelAndView(map, "ranking.html");
+			String currentUser = rq.session().attribute("currentUser");
+			if (currentUser != null) {
+				// Si hay usuario registrado
+				List<User> usuarios = User.findAll().limit(10).orderBy("score desc");
+				for (int i = 0; i < usuarios.size(); i++) {
+					String add = "user" + i;
+					map.put(add, usuarios.get(i).getString("name"));
+					add = "score" + i;
+					map.put(add, usuarios.get(i).getString("score"));
 				}
+				return new ModelAndView(map, "ranking.html");
+			}else {
+				// Si no hay usuario registrado
+				map.put("estado", "Bienvenido a Pregunta2");
+				return new ModelAndView(map, "logueo.html");
 			}
 		},new MustacheTemplateEngine());
 

@@ -5,5 +5,5 @@ CREATE TABLE duels (
   score int(11),
   corrects1 int(11),
   corrects2 int(11),
-  category int(11)
+  questionNumber int(11)
 )ENGINE=InnoDB;

@@ -71,8 +71,8 @@ function message(msg) {
                 insert("duelist", 
                 "<li>" + 
                 user +  
-                "<button onclick=\"sendJugar('" + user + "')\">Jugar</button>" +
-                "<button onclick=\"sendAbandonar('" + user + "')\">Abandonar</button>" +
+                "<form action=\"/jugando\" method=\"post\">" + 
+                "<input type=\"submit\" value=\"Jugar vs " + user + "\" name=\"duelo\"> </form> " +
                 "</li>");
             });
             break;
