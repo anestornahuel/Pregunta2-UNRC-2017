@@ -364,6 +364,9 @@ public class App {
 						map.put("estado","Duelo " + username + " vs " + opponentname);
 						Duel duelTurno = Duel.getFirst(opponentname, username);
 						rq.session().attribute("currentDuel", duelTurno.getString("id"));
+						String score1 = duelTurno.getString("corrects1");
+						String score2 = duelTurno.getString("corrects1");
+						map.put("estado1", "Resultado parcial: " + score1 + " - " + score2);
 						return new ModelAndView(map,"generar.html");
 					}else if (duelo.equals("Continuar")) {
 						// click en continuar
@@ -390,7 +393,10 @@ public class App {
 								return new ModelAndView(map,"jugando.html");							
 						 	}else {					 		
 								map.put("estado","Duelo " + username + " vs " + opponentname);
-								map.put("estado1","Es el turno de " + opponentname);
+								String scr1 = duel.getString("corrects1");
+								String scr2 = duel.getString("corrects2");
+								map.put("estado1", "Resultado parcial: " + scr1 + " - " + scr2);
+								map.put("estado2","Es el turno de " + opponentname);
 								return new ModelAndView(map,"generar.html");
 						 	}
 						}
@@ -416,7 +422,7 @@ public class App {
 							}else {
 								// Duelo
 								Duel duel = Duel.getFirst(Integer.parseInt(currentDuel));
-								duel.correct(currentUser);
+								duel.correct(username);
 								duel.changeTurn();
 								map.put("tipo", "duelo");
 							}
