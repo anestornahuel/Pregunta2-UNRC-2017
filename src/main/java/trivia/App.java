@@ -414,8 +414,6 @@ public class App {
 								}else {
 									String winnerName = (score1 > score2) ? user1 : user2;
 									result = "Ganador " + winnerName;
-									User winner = User.findFirst("name = ?", winnerName);
-									winner.updateScore(scoreDuel);
 								}
 								map.put("estado1", user1 +  " VS " + user2);
 								map.put("estado","Duelo terminado");
@@ -424,16 +422,6 @@ public class App {
 								return new ModelAndView(map,"generar.html");
 							}else {
 							 	String opponentname = duel.getString("user2");
-								if (duel.questionNumber() == 1) {
-									Integer scoreDuel = duel.getInteger("score");
-									if (user.lives() <= 0 || user.score() < scoreDuel) {
-										map.put("estado", "No tienes puntos o vidas suficientes");
-										return new ModelAndView(map,"principal.html");										
-									}else {
-										user.reduceLive();
-										user.updateScore(-scoreDuel);
-									}
-								}
 								if (opponentname.equals(username)) {
 									Integer qn = duel.getInteger("questionNumber");
 									qn = (qn % 2 == 0) ? (qn / 2) : ((qn - 1) / 2);
@@ -457,6 +445,24 @@ public class App {
 							 	}
 							}
 						}
+					}else if (duelo.equals("Abandonar")) {
+						String currentDuel = rq.session().attribute("currentDuel");
+						Duel duel = Duel.getFirst(Integer.parseInt(currentDuel));	
+						if (duel == null) {
+							// El juego no existe
+							map.put("estado","El duelo ya termino");
+							return new ModelAndView(map,"principal.html");
+						}else {
+							if (duel.questionNumber() < 12) {
+								String user1 = duel.getString("user1");
+								String user2 = duel.getString("user2");
+								String userScoreName = (username.equals(user1)) ? user2 : user1;
+								User userScore = User.findFirst("name = ?", userScoreName);								
+							}
+							duel.delete();
+							map.put("estado","Duelo eliminado");
+							return new ModelAndView(map,"principal.html");
+						}			
 					}
 				}else{
 					String currentQuestion = rq.session().attribute("currentQuestion");
@@ -480,6 +486,16 @@ public class App {
 								// Duelo
 								Duel duel = Duel.getFirst(Integer.parseInt(currentDuel));
 								duel.correct(username);
+								if (duel.questionNumber() == 0) {
+									Integer scoreDuel = duel.getInteger("score");
+									if (user.lives() <= 0 || user.score() < scoreDuel) {
+										map.put("estado", "No tienes puntos o vidas suficientes");
+										return new ModelAndView(map,"principal.html");										
+									}else {
+										user.reduceLive();
+										user.updateScore(-scoreDuel);
+									}
+								}
 								duel.changeTurn();
 								map.put("tipo", "duelo");
 								Base.close();
@@ -521,6 +537,16 @@ public class App {
 							}else {
 								// Duelo
 								Duel duel = Duel.getFirst(Integer.parseInt(currentDuel));
+								if (duel.questionNumber() == 0) {
+									Integer scoreDuel = duel.getInteger("score");
+									if (user.lives() <= 0 || user.score() < scoreDuel) {
+										map.put("estado", "No tienes puntos o vidas suficientes");
+										return new ModelAndView(map,"principal.html");										
+									}else {
+										user.reduceLive();
+										user.updateScore(-scoreDuel);
+									}
+								}
 								duel.changeTurn();
 								map.put("tipo", "duelo");
 								Base.close();
@@ -563,6 +589,16 @@ public class App {
 						}else {
 							// Duelo
 							Duel duel = Duel.getFirst(Integer.parseInt(currentDuel));
+							if (duel.questionNumber() == 0) {
+								Integer scoreDuel = duel.getInteger("score");
+								if (user.lives() <= 0 || user.score() < scoreDuel) {
+									map.put("estado", "No tienes puntos o vidas suficientes");
+									return new ModelAndView(map,"principal.html");										
+								}else {
+									user.reduceLive();
+									user.updateScore(-scoreDuel);
+								}
+							}
 							duel.changeTurn();
 							map.put("tipo", "duelo");
 							Base.close();
