@@ -139,6 +139,32 @@ public class App {
 		return s != null && s.length() > 6;
 	}
 
+
+	private static void winner(Duel duel, Map map) {
+		Integer score1 = duel.getInteger("corrects1");
+		Integer score2 = duel.getInteger("corrects2");
+		Integer scoreDuel = duel.getInteger("score");
+		String user1 = duel.getString("user1");
+		String user2 = duel.getString("user2");
+		String result;
+		if (score1.equals(score2)) {
+			result = "Empate";
+			User winner1 = User.findFirst("name = ?", user1);
+			winner1.updateScore(scoreDuel);
+			User winner2 = User.findFirst("name = ?", user2);
+			winner2.updateScore(scoreDuel);
+		}else {
+			String winnerName = (score1 > score2) ? user1 : user2;
+			User winner = User.findFirst("name = ?", winnerName);
+			winner.updateScore(scoreDuel * 2);
+			result = "Ganador " + winnerName;
+			map.put("estado1", user1 +  " VS " + user2);
+			map.put("estado","Duelo terminado");
+			map.put("estado",result);
+			map.put("estado2", "Resultado final: " + score1 + " - " + score2);
+		}
+	}
+
 	public static void main(String[] args) {
 
 		staticFileLocation("/public");
@@ -464,7 +490,8 @@ public class App {
 								String user1 = duel.getString("user1");
 								String user2 = duel.getString("user2");
 								String userScoreName = (username.equals(user1)) ? user2 : user1;
-								User userScore = User.findFirst("name = ?", userScoreName);								
+								User userScore = User.findFirst("name = ?", userScoreName);
+								userScore.updateScore(duel.score() * 2);
 							}
 							duel.delete();
 							map.put("estado","Duelo eliminado");
@@ -492,6 +519,11 @@ public class App {
 							}else {
 								// Duelo
 								Duel duel = Duel.getFirst(Integer.parseInt(currentDuel));
+								if (duel == null) {
+									// El juego no existe
+									map.put("estado","El duelo ya termino");
+									return new ModelAndView(map,"principal.html");
+								}
 								duel.correct(username);
 								if (duel.questionNumber() == 0) {
 									Integer scoreDuel = duel.getInteger("score");
@@ -509,27 +541,10 @@ public class App {
 								update();
 								Base.open(driverdb, basedb, userdb, passworddb);	
 								updateSuspense();
-								String opponentname = duel.getString("user2");
 								if (duel.questionNumber() >= 12) {
-									Integer score1 = duel.getInteger("corrects1");
-									Integer score2 = duel.getInteger("corrects2");
-									Integer scoreDuel = duel.getInteger("score");
-									String user1 = duel.getString("user1");
-									String result;
-									if (score1 == score2) {
-										result = "Empate";
-									}else {
-										String winnerName = (score1 > score2) ? user1 : opponentname;
-										result = "Ganador " + winnerName;
-										User winner = User.findFirst("name = ?", winnerName);
-										winner.updateScore(scoreDuel);
-									}
-									map.put("estado1", user1 +  " VS " + opponentname);
-									map.put("estado","Duelo terminado");
-									map.put("estado",result);
-									map.put("estado2", "Resultado final: " + score1 + " - " + score2);
+									winner(duel, map);
 								}else {
-									map.put("estado3", "Es el turno de " + opponentname);
+									map.put("estado3", "Es el turno de " + duel.getString("user2"));
 								}
 							}
 						}else {
@@ -544,6 +559,11 @@ public class App {
 							}else {
 								// Duelo
 								Duel duel = Duel.getFirst(Integer.parseInt(currentDuel));
+								if (duel == null) {
+									// El juego no existe
+									map.put("estado","El duelo ya termino");
+									return new ModelAndView(map,"principal.html");
+								}
 								if (duel.questionNumber() == 0) {
 									Integer scoreDuel = duel.getInteger("score");
 									if (user.lives() <= 0 || user.score() < scoreDuel) {
@@ -559,28 +579,11 @@ public class App {
 								Base.close();
 								update();
 								Base.open(driverdb, basedb, userdb, passworddb);	
-								updateSuspense();
-								String opponentname = duel.getString("user2");								
+								updateSuspense();			
 								if (duel.questionNumber() >= 12) {
-									Integer score1 = duel.getInteger("corrects1");
-									Integer score2 = duel.getInteger("corrects2");
-									Integer scoreDuel = duel.getInteger("score");
-									String user1 = duel.getString("user1");
-									String result;
-									if (score1 == score2) {
-										result = "Empate";
-									}else {
-										String winnerName = (score1 > score2) ? user1 : opponentname;
-										result = "Ganador " + winnerName;
-										User winner = User.findFirst("name = ?", winnerName);
-										winner.updateScore(scoreDuel);
-									}
-									map.put("estado1", user1 +  " VS " + opponentname);
-									map.put("estado","Duelo terminado");
-									map.put("estado",result);
-									map.put("estado2", "Resultado final: " + score1 + " - " + score2);									
+									winner(duel, map);
 								}else {
-									map.put("estado3", "Es el turno de " + opponentname);	
+									map.put("estado3", "Es el turno de " + duel.getString("user2"));	
 								}
 							}				
 						}
@@ -596,6 +599,11 @@ public class App {
 						}else {
 							// Duelo
 							Duel duel = Duel.getFirst(Integer.parseInt(currentDuel));
+							if (duel == null) {
+								// El juego no existe
+								map.put("estado","El duelo ya termino");
+								return new ModelAndView(map,"principal.html");
+							}
 							if (duel.questionNumber() == 0) {
 								Integer scoreDuel = duel.getInteger("score");
 								if (user.lives() <= 0 || user.score() < scoreDuel) {
@@ -612,27 +620,10 @@ public class App {
 							update();
 							Base.open(driverdb, basedb, userdb, passworddb);
 							updateSuspense();
-							String opponentname = duel.getString("user2");
 							if (duel.questionNumber() >= 12) {
-								Integer score1 = duel.getInteger("corrects1");
-								Integer score2 = duel.getInteger("corrects2");
-								Integer scoreDuel = duel.getInteger("score");
-								String user1 = duel.getString("user1");
-								String result;
-								if (score1 == score2) {
-									result = "Empate";
-								}else {
-									String winnerName = (score1 > score2) ? user1 : opponentname;
-									result = "Ganador " + winnerName;
-									User winner = User.findFirst("name = ?", winnerName);
-									winner.updateScore(scoreDuel);
-								}
-								map.put("estado1", user1 +  " VS " + opponentname);
-								map.put("estado","Duelo terminado");
-								map.put("estado",result);
-								map.put("estado2", "Resultado final: " + score1 + " - " + score2);									
+								winner(duel, map);
 							}else {
-								map.put("estado3", "Es el turno de " + opponentname);	
+								map.put("estado3", "Es el turno de " + duel.getString("user2"));	
 							}
 						}
 						return new ModelAndView(map, "generar.html");
