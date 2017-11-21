@@ -388,11 +388,18 @@ public class App {
 						String opponentname = duelo.substring(9);
 						map.put("estado","Duelo " + username + " vs " + opponentname);
 						Duel duelTurno = Duel.getFirst(opponentname, username);
-						rq.session().attribute("currentDuel", duelTurno.getString("id"));
-						String score1 = duelTurno.getString("corrects2");
-						String score2 = duelTurno.getString("corrects1");
-						map.put("estado1", "Resultado parcial: " + score1 + " - " + score2);
-						return new ModelAndView(map,"generar.html");
+						Integer scoreDuel = duelTurno.score();
+						Integer qn = duelTurno.questionNumber();
+						if (qn == 0 && (user.lives() <= 0 || user.score() < scoreDuel)) {
+							map.put("estado", "No tienes puntos o vidas suficientes");
+							return new ModelAndView(map,"principal.html");										
+						}else {
+							rq.session().attribute("currentDuel", duelTurno.getString("id"));
+							String score1 = duelTurno.getString("corrects2");
+							String score2 = duelTurno.getString("corrects1");
+							map.put("estado1", "Resultado parcial: " + score1 + " - " + score2);
+							return new ModelAndView(map,"generar.html");							
+						}
 					}else if (duelo.equals("Continuar")) {
 						// click en continuar
 						String currentDuel = rq.session().attribute("currentDuel");
