@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <title>Duelo</title>
+        <link rel="stylesheet" type="text/css" href="css/style.css" />        
+        <script type="text/javascript" src="javascript/webso.js"></script>
+    </head>
+    <body>
+        <header>
+            <h1> PREGUNTA2 - Duelo </h1>
+            <form action="/" method="get">
+                <input type="submit" value="Atras" name="atras"> <br>
+            </form>
+            <button id="entrarButton" onclick="sendEntrar('{{usuario}}')">Actualizar</button>
+            <p>Puntos a apostar</p>
+            <input id="score" type="number" value="10">
+            <p id="estado"></p>
+        </header>
+        <br>
+        <section>
+            <h2>Lista de usuarios disponibles</h2>
+            <ul id="userlist"> <p>Click en actualizar para ver los usuarios disponibles</p> </ul>
+        </section>
+        <br>
+        <section>
+            <h2>Lista de desafios</h2>
+            <ul id="duelist"> <p>No hay desafios nuevos</p> </ul>
+        </section>
+    </body>
+</html>
+

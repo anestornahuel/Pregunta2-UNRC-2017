@@ -20,11 +20,14 @@
 			<h4> {{usuario}} -- {{puntos}} ptos -- {{vidas}} vidas</h4> <br>
 			<p>{{estado}}</p>
 			<br>
-				<form action="/principal" method="post">
-					<input type="submit" value="Jugar" name="jugar"> 
+				<form action="/jugando" method="post">
+					<input type="submit" value="Jugar" name="comun"> 
 				</form>	
-				<form action="/principal" method="post">
-					<input type="submit" value="Ranking" name="ranking"> <br>
+				<form action="/ranking" method="get">
+					<input type="submit" value="Ranking"> <br>
+				</form>
+				<form action="/espera" method="get">
+					<input type="submit" value="Duelo"> 
 				</form>	
 				<form action="/principal" method="post">
 					<input type="submit" value="Crear pregunta" name="crearpregunta"> <br>
