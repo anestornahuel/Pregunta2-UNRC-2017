@@ -1,6 +1,5 @@
 var webSocket = new WebSocket("ws://" + location.hostname + ":" + location.port + "/duelo");
-webSocket.onmessage = function (msg) { 
-    console.log(msg);
+webSocket.onmessage = function (msg) {
     message(msg); 
 };
 
