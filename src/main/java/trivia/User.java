@@ -4,9 +4,12 @@ import org.javalite.activejdbc.Model;
 import org.javalite.activejdbc.validation.UniquenessValidator;
 
 public class User extends Model {
+
+	static public final int LIVECOST = 50;		// Precio de una vida
+
 	static{
     		validatePresenceOf("name").message("Please, provide your username");
-		validatePresenceOf("password").message("Please, provide your password");
+			validatePresenceOf("password").message("Please, provide your password");
     		validateWith(new UniquenessValidator("name")).message("This name is already taken.");	
     	}
 
@@ -21,6 +24,15 @@ public class User extends Model {
 		saveIt();
 		set("lastupdate", getDate("created_at"));
 		saveIt();
+	}
+
+	public boolean buyLive() {
+		if (score() >= LIVECOST) {
+			updateScore(-LIVECOST);
+			updateLives(1);
+			return true;
+		}
+		return false;
 	}
 
 	// Aumenta o disminuye x puntos
@@ -50,5 +62,4 @@ public class User extends Model {
 		set("globalLives", lives() + x);
 		saveIt();
 	}
-
 }

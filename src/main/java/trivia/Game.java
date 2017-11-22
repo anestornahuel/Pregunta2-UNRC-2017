@@ -16,6 +16,12 @@ public class Game extends Model {
 		return Integer.parseInt(this.getString("lifes"));
 	}
 
+	public Game(String uid) {
+		set("user_id", uid);
+		set("lifes", 3);
+		saveIt();
+	}
+	
 	public Game(String uid, String lifes) {
 		set("user_id", uid);
 		set("lifes", lifes);
