@@ -145,9 +145,8 @@ public class App {
 
 	public static void main(String[] args) {
 
-		staticFileLocation("/public");
-		// staticFiles.location("/public");
-		// staticFiles.expireTime(600);
+		staticFiles.location("/public");
+		staticFiles.expireTime(600);
 		webSocket("/duelo", Pregunta2WebSocketHandler.class);
 		init();
 		
