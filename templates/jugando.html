@@ -1,35 +1,27 @@
 <!DOCTYPE>
 <html lang="es">
 	<head>
+		<script type="text/javascript" src="javascript/script.js"></script>
 		<link rel="stylesheet" type="text/css" href="css/style.css" />
-		<title> Pregunta2 {{categoria}} </title>
+		<title> {{categoria}} - Pregunta2 </title>
 	</head>
-	<body>
-		<header>
-        	<h1> <img src="image/{{categoria}}.png" id="imgjugando" align="left"> PREGUNTA2 - {{categoria}} - {{usuario}}</h1>
-        	<p>Vidas: {{vidas}}
-        		<br>
-        		Puntos: {{puntos}}
-        	</p>
-        	<br><br>
+	<body onload="second('timer', '6', 'time')">
+
+		<header >
+        	<img src="image/preg2.png" onmouseover="this.src='image/preg3.png';" onmouseout="this.src='image/preg2.png';" />
 		</header>
-		<br>
-		<section>
-			<p>{{pregunta}}</p>
+    <div id="posicionBloque">
+        <p>Usuario: {{usuario}}</p>
+        <p id = "timer" class="colorRojo">Tiempo</p>
+        <p class="colorRojo">Categoria: {{categoria}}</p>
+		<p>{{pregunta}}</p>
 
-			<form action="/jugando" method="post">
-				<input class="btn" type="submit" value={{rpta1}} name="ans"> <br>
-			</form>	
-
-			<form action="/jugando" method="post">
-				<input class="btn" type="submit" value={{rpta2}} name="ans"> <br>			
-
-			</form>	
-			
-			<form action="/jugando" method="post">
-				<input class="btn" type="submit" value={{rpta3}} name="ans"> <br>			
-			</form>	
-
-		</section>
+		<form action="/jugando" method="post">
+			<input class="btn" type="submit" value={{rpta1}} name="ans{{tipo}}" style="display: block"> <br>
+			<input class="btn" type="submit" value={{rpta2}} name="ans{{tipo}}" style="display: block"> <br>			
+			<input class="btn" type="submit" value={{rpta3}} name="ans{{tipo}}" style="display: block"> <br>			
+			<input id="time" type="submit" value="time" name="time{{tipo}}" style="display: none">
+		</form>	
+	</div>
 	</body>
 </html>

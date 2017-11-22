@@ -1,34 +1,38 @@
 <!DOCTYPE>
 <html lang="es">
 	<head>
-	</head>
-	<head>
 		<title> PREGUNTA2 - Principal </title>
 		<link rel="stylesheet" type="text/css" href="css/style.css" />
 	</head>
 	<body>
-		<header>
-			<br><br>
-        	<h1> PREGUNTA2 </h1>
-        	<form action="/principal" method="post">
-				<input type="submit" value="Cerrar Sesion" name="exit"> <br>
-			</form>	
-        	<br><br>
+		<header >
+        	<img src="image/preg2.png" onmouseover="this.src='image/preg3.png';" onmouseout="this.src='image/preg2.png';" />
 		</header>
-		<br>
-		<section>
-			<h4> {{usuario}} -- {{puntos}} ptos</h4> <br>
+
+		<div id="posicionBloque">
+
+        	<form action="/principal" method="post">
+				<input id="botonSalir" type="image" value="Cerrar Sesion" name="exit" src="image/salir1.png" onmouseover="this.src='image/salir2.png';" onmouseout="this.src='image/salir1.png';" >
+			</form>	
+		
+			<p class="colorRojo">Usuario: {{usuario}} | Puntos: {{puntos}} Pts | Vidas: {{vidas}}</p>
 			<p>{{estado}}</p>
-			<br>
-				<form action="/principal" method="post">
-					<input type="submit" value="Jugar" name="jugar"> 
-				</form>	
-				<form action="/principal" method="post">
-					<input type="submit" value="Ranking" name="ranking"> <br>
-				</form>	
-				<form action="/principal" method="post">
-					<input type="submit" value="Crear pregunta" name="crearpregunta"> <br>
-				</form>	
-		</section>
+			<form action="/jugando" method="post">
+				<input class="btn" type="submit" value="Jugar" name="comun"> 
+			</form>	
+			<form action="/ranking" method="get">
+				<input class="btn" type="submit" value="Ranking"> 
+			</form>
+			<form action="/espera" method="get">
+				<input class="btn" type="submit" value="Duelo"> 
+			</form>	
+			<form action="/crearpregunta" method="post">
+				<input class="btn" type="submit" value="Crear pregunta" name="crearpregunta"> 
+			</form>
+			<form action="/principal" method="post">
+				<input class="btn" type="submit" value="Comprar vida" name="comprarvida"> 
+			</form>
+
+		</div>
 	</body>
 </html>

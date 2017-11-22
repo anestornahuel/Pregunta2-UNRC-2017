@@ -1,9 +1,4 @@
 package trivia;
-import static spark.Spark.*;
-import trivia.Category;
-import trivia.Game;
-import trivia.Question;
-import trivia.User;
 import org.javalite.activejdbc.Base;
 
 class Inicializacion {

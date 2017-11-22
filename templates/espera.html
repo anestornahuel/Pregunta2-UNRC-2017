@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <title>Duelo - Pregunta2</title>
+        <link rel="stylesheet" type="text/css" href="css/style.css" />        
+        <script type="text/javascript" src="javascript/webso.js"></script>
+    </head>
+    <body>
+        <header >
+            <img src="image/preg2.png" onmouseover="this.src='image/preg3.png';" onmouseout="this.src='image/preg2.png';" />
+        </header>
+        <div id="posicionBloque">
+        <form id="Atras" action="/" method="get">
+            <input type="image" value="Atras" name="atras" src="image/atras.png" onmouseover="this.src='image/atras1.png';" onmouseout="this.src='image/atras.png';" width="170"> 
+        </form><br>
+        
+        <p>Puntos a Apostar</p>
+        <input id="score" type="number" value="10"><br><br>
+        <button id="entrarButton" onclick="sendEntrar('{{usuario}}')">Actualizar</button>
+        
+        <p id="estado"></p>
+        
+        <p class="colorRojo">Lista de Usuarios Disponibles</p>
+        <ul id="userlist">  </ul>
+        
+        <p class="colorRojo">Lista de Desafios</p>
+        <ul id="duelist"> <p>No hay desafios nuevos</p> </ul>
+        </div>
+    </body>
+</html>
+

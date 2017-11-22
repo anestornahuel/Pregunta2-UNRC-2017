@@ -2,11 +2,13 @@ package trivia;
 
 import org.javalite.activejdbc.Model;
 import org.javalite.activejdbc.validation.UniquenessValidator;
+import java.util.Random;
+import java.util.List;
 
 public class Question extends Model {
 	static {
 	  	validatePresenceOf("category_id").message("Please, provide your question");
-	    	validatePresenceOf("question").message("Please, provide your question");
+	    validatePresenceOf("question").message("Please, provide your question");
 	  	validatePresenceOf("answer1").message("Please, provide your question");
 	  	validatePresenceOf("answer2").message("Please, provide your question");
 	  	validatePresenceOf("answer3").message("Please, provide your question");
@@ -28,4 +30,22 @@ public class Question extends Model {
   		set("correct", Integer.parseInt(co));
   		saveIt();
   	}  
+
+  	public static Question getFirst(String question) {
+  		return Question.findFirst("question = ?", question);
+  	}
+  	
+  	// Obtiene una pregunta aleatoria de la n-esesima categoria
+  	public static Question randomQuestion(int n) {
+  		String idcat = (Category.where("id >= ?", "0").get(n)).getString("id");
+  		List<Question> questions = Question.where("category_id = ?", idcat);
+  		Random ran = new Random();
+  		return questions.get(ran.nextInt(questions.size()));
+  	}
+
+  	// Obtiene una pregunta aleatoria
+  	public static Question randomQuestion() {
+  		Random ran = new Random();
+  		return  randomQuestion(ran.nextInt(Category.CANT));
+  	}
 }
