@@ -166,8 +166,9 @@ public class App {
 	}
 
 	public static void main(String[] args) {
-
 		staticFileLocation("/public");
+		// staticFiles.location("/public");
+		// staticFiles.expireTime(600);
 		webSocket("/duelo", Pregunta2WebSocketHandler.class);
 		init();
 		
@@ -316,23 +317,15 @@ public class App {
 						map.put("estado", "No tienes puntos suficientes, necesitas " + LIFECOST);
 					}
 					user = User.findFirst("id = ?", currentUser);
-					String vidas = user.getString("globalLives");
 					puntos = user.getString("score");
 					map.put("puntos", puntos);
-					map.put("vidas", vidas);
-					return new ModelAndView(map, "principal.html");							
-				}else if (rq.queryParams("crearpregunta") != null) {
-					map.put("estado", "Para crear una pregunta completa los siguientes campos");
-					return new ModelAndView(map, "crearpregunta.html");
-				}else {
-					// String exit = rq.queryParams("exit");
-					if (rq.queryParams("exit") != null) {
-						rq.session().removeAttribute("currentUser");
-						return new ModelAndView(null, "logueo.html");
-					}else {
-						return new ModelAndView(map, "principal.html");
-					}
+				}else if (rq.queryParams("exit") != null) {
+					rq.session().removeAttribute("currentUser");
+					return new ModelAndView(null, "logueo.html");					
 				}
+				String vidas = user.getString("globalLives");
+				map.put("vidas", vidas);
+				return new ModelAndView(map, "principal.html");							
 			}
 		},new MustacheTemplateEngine());
 
@@ -656,51 +649,30 @@ public class App {
 
 		// Permite al usuario crear una nueva pregunta
 		post("/crearpregunta",(rq, rs) -> {
-			Map map = new HashMap();
 			String currentUser = rq.session().attribute("currentUser"); 
-			if (currentUser == null) {
-				return new ModelAndView(null, "logueo.html");
-			}else {
-				User user = User.findFirst("id = ?", currentUser);
-				String vidas = user.getString("globalLives");
-				map.put("usuario", user.getString("name"));
-				map.put("puntos", user.getString("score"));
-				map.put("vidas", vidas);
+			if (currentUser != null) {
+				Map map = new HashMap();
 				if (rq.queryParams("newquestion") != null) {
 					String question = rq.queryParams("question");
-					String categoria = rq.queryParams("categoria");
-					String ans1 = rq.queryParams("ans1");
-					String ans2 = rq.queryParams("ans2");
-					String ans3 = rq.queryParams("ans3");
-					String correct = rq.queryParams("correct");					
-					if (correct != null && correct.compareTo("1") >= 0 && correct.compareTo("3") <= 0 &&question != null && categoria != null && ans1 != null && ans2 != null && ans3 != null) {
-						// Informacion correcta en los campos			
-						Category catName = Category.findFirst("name = ?", categoria);
-						Category catId = Category.findFirst("id = ?", categoria);
-						if (catName != null || catId != null) {
-							// Categoria correcta
-							if (Question.findFirst("question = ?", question) == null) {
-								// La pregunta no existe
-								Category catego = catName != null ? catName : catId;
-								Question ques = new Question(catego.getString("id"), question, ans1, ans2, ans3, correct);
-								map.put("estado", "La pregunta " + ques.getString("id") + " se creo correctamente");
-							}else {
-								// La pregunta ya existe
-								map.put("estado", "Error: La pregunta ya existe");
-							}							
-						}else {
-							// Categoria incorrecta
-							map.put("estado", "Error: La categoria no existe");								
-						}							
+					if (Question.getFirst(question) != null) {
+						map.put("estado", "Error: La pregunta ya existe");							
 					}else {
-						// Informacion invalida en los campos
-						map.put("estado", "Error: Informacion invalida en los campos");
+						String category = rq.queryParams("categoria");
+						String ans1 = rq.queryParams("ans1");
+						String ans2 = rq.queryParams("ans2");
+						String ans3 = rq.queryParams("ans3");
+						String correct = rq.queryParams("correct");
+						Category cat = Category.getFirst(category);
+						String catId = cat.getString("id");
+						Question ques = new Question(catId, question, ans1, ans2, ans3, correct);
+						map.put("estado", "La pregunta " + ques.getString("id") + " se creo correctamente");
 					}
-					return new ModelAndView(map, "crearpregunta.html");
-				}else {					
-					return new ModelAndView(map, "principal.html");
+				}else {
+					map.put("estado", "Para crear una pregunta completa los siguientes campos");
 				}
+				return new ModelAndView(map, "crearpregunta.html");
 			}
+			return new ModelAndView(null, "logueo.html");
 		},new MustacheTemplateEngine());
 	}
 }

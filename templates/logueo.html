@@ -3,29 +3,29 @@
 	<head>
 		<link rel="stylesheet" type="text/css" href="css/style.css" />
 		<title> Pregunta2 - Login </title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 	</head>
 	<body>
-		<header>
-        			<h1> <img src="image/preguntados.png" align="left"> PREGUNTA2 <h4>{{estado}}</h4> </h1>
+		<header >
+        	<img src="image/preg2.png" onmouseover="this.src='image/preg3.png';" onmouseout="this.src='image/preg2.png';" />
 		</header>
-		<br>
-		<section>
-			<br>
-			<h4>Inicia sesion con una cuenta ya registrada</h4>
-			<form action="/logueo" method="post">
-				<input type="text" name="nombrel" placeholder="Nombre de usuario" autocomplete="off">
-				<input type="password" name="clavel" placeholder="Contraseña" autocomplete="off">
-				<input type="submit" value="Entrar"	 name="entrar" autocomplete="off">
-			</form>
-			<h4> <br> </h4>
-			<h4>Crea una nueva cuenta</h4>
-			<form action="/logueo" method="post">
-				<input type="text" name="nombrer" placeholder="Nombre de usuario" autocomplete="off">
-				<input type="password" name="clave1" placeholder="Contraseña" autocomplete="off">
-				<input type="password" name="clave2" placeholder="Repetir Contraseña" autocomplete="off">
-				<input type="submit" value="Registrarme" name="registrarme" autocomplete="off">
-			</form>	
-			<br><br><br>	
-		</section>
+		<div id="posicionBloque">
+        <p class="colorRojo">{{estado}}</p>
+		
+		<form action="/logueo" method="post">
+			<p>Inicia sesion con una cuenta ya registrada</p>
+			<input class="input usuario" type="text" name="nombrel" placeholder="Nombre de usuario" autocomplete="off">
+			<input class="input contraseña" type="password" name="clavel" placeholder="Contraseña" autocomplete="off">
+			<input class="btn" type="submit" value="Entrar" name="entrar" autocomplete="off">
+		</form>
+			
+		<form action="/logueo" method="post">
+			<p>Crea una nueva cuenta</p>
+			<input class="input usuario" type="text" name="nombrer" placeholder="Nombre de usuario" autocomplete="off" width="100">
+			<input class="input contraseña" type="password" name="clave1" placeholder="Contraseña" autocomplete="off">
+			<input class="input contraseña" type="password" name="clave2" placeholder="Repetir Contraseña" autocomplete="off">
+			<input class="btn" type="submit" value="Registrarme" name="registrarme" autocomplete="off">
+		</form>
+		</div>
 	</body>
 </html>
