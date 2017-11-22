@@ -17,4 +17,8 @@ public class Category extends Model {
 		set("name", n);
 		saveIt();
 	}
+
+	public static Category getFirst(String name) {
+		return Category.findFirst("name = ?", name);
+	}
 }

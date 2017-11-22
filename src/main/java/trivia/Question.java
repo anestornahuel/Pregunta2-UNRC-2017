@@ -28,4 +28,8 @@ public class Question extends Model {
   		set("correct", Integer.parseInt(co));
   		saveIt();
   	}  
+
+  	public static Question getFirst(String question) {
+  		return Question.findFirst("question = ?", question);
+  	}
 }

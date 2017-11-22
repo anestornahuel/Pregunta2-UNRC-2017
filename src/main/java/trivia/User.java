@@ -51,5 +51,4 @@ public class User extends Model {
 		saveIt();
 	}
 
-
 }
