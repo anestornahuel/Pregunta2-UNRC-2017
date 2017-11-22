@@ -3,8 +3,10 @@ package trivia;
 import org.javalite.activejdbc.Model;
 import org.javalite.activejdbc.validation.UniquenessValidator;
 
-
 public class Category extends Model {
+
+	static public final int CANT = 6;	// Cantidad de categorias
+		
 	static {
     		validatePresenceOf("name").message("Please, provide your categoryname");
     		validateWith(new UniquenessValidator("name")).message("This name is already taken.");
